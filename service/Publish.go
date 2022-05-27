@@ -4,20 +4,10 @@ import (
 	"demo1/repository"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"mime/multipart"
 	"net/http"
-	"path/filepath"
 )
 
-type PublishActionRequest struct {
-	Token string                `json:"token" form:"token"`
-	Data  *multipart.FileHeader `json:"data" form:"data"`
-	Title string                `json:"title" form:"title"`
-}
-
-type PublishActionResponse struct {
-	Response
-}
+// ---Publish---
 
 func Publish(c *gin.Context) {
 	var req PublishActionRequest
@@ -31,12 +21,17 @@ func Publish(c *gin.Context) {
 			return
 		}
 		// 保存文件到文件夹
-		finalName := filepath.Base(req.Data.Filename)
-		saveFile := filepath.Join("./static/", finalName)
+		//finalName := filepath.Base(req.Data.Filename)
+		////saveFile := filepath.Join("./static/", finalName)
+		//saveFile := "./static/" + finalName
 
-		fmt.Println("上传文件成功")
+		file := req.Data
+		path := "./static/" + file.Filename
 
-		if err := c.SaveUploadedFile(req.Data, saveFile); err != nil { // 保存失败返回失败信息
+		//fmt.Println(finalName, saveFile)
+		//fmt.Println("上传文件成功")
+
+		if err := c.SaveUploadedFile(file, path); err != nil { // 保存失败返回失败信息
 			c.JSON(http.StatusOK, PublishActionResponse{
 				Response{
 					StatusCode: 1,
@@ -47,7 +42,7 @@ func Publish(c *gin.Context) {
 		}
 
 		// 文件信息写入数据库
-		if err := repository.InsertVideo(req.Token, saveFile, req.Title); err != nil {
+		if err := repository.InsertVideo(req.Token, path[1:], req.Title); err != nil {
 			c.JSON(http.StatusOK, PublishActionResponse{
 				Response{
 					StatusCode: 1,
@@ -61,7 +56,7 @@ func Publish(c *gin.Context) {
 		c.JSON(http.StatusOK, PublishActionResponse{
 			Response{
 				StatusCode: 0,
-				StatusMsg:  finalName + " uploaded successfully",
+				StatusMsg:  file.Filename + " uploaded successfully",
 			},
 		})
 
@@ -77,28 +72,16 @@ func Publish(c *gin.Context) {
 
 // ---PublishList---
 
-type Video struct {
-	repository.Video
-	IsFavorite bool
-}
-
-type PublishListRequest struct {
-	Token  string `json:"token" form:"token"`
-	UserId uint   `json:"user_id" form:"user_id"`
-}
-
-type PublishListResponse struct {
-	Response
-	VideoList []Video `json:"video_list"`
-}
-
 func PublishList(c *gin.Context) {
 	var req PublishListRequest
 	if err := c.ShouldBind(&req); err == nil {
 
 		var videoList []repository.Video
 
+		fmt.Println(req.UserId)
+
 		if err := repository.FindAllVideoByUid(req.UserId, &videoList); err != nil {
+			fmt.Println("get published list error")
 			c.JSON(http.StatusOK, PublishListResponse{
 				Response: Response{
 					StatusCode: 1,
@@ -110,20 +93,21 @@ func PublishList(c *gin.Context) {
 
 		resList := make([]Video, len(videoList))
 
-		for i, video := range videoList {
-			fmt.Println(i, video)
-		}
+		//for i, video := range videoList {
+		//	fmt.Println(i, video)
+		//}
 
 		for i, video := range videoList {
 			resList[i].Video = video
 			repository.FindUserById(video.AuthorID, &resList[i].Video.Author)
-			resList[i].IsFavorite = repository.CheckIsFavorite(req.UserId, video.ID)
+			resList[i].IsFavorite = repository.CheckIsFavorite(req.Token, video.ID)
 		}
 
 		for i, video := range resList {
 			fmt.Println(i, video)
 		}
 
+		fmt.Println("get published list successfully")
 		c.JSON(http.StatusOK, PublishListResponse{
 			Response: Response{
 				StatusCode: 0,
@@ -133,6 +117,7 @@ func PublishList(c *gin.Context) {
 		})
 
 	} else {
+		fmt.Println("get published list should bind error")
 		c.JSON(http.StatusOK, PublishListResponse{
 			Response: Response{
 				StatusCode: 1,

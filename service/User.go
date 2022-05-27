@@ -7,17 +7,6 @@ import (
 	"net/http"
 )
 
-type UserRegisterRequest struct {
-	UserName string `json:"username" form:"username"`
-	Password string `json:"password" form:"password"`
-}
-
-type UserResisterResponse struct {
-	Response
-	UserId uint   `json:"user_id"`
-	Token  string `json:"token"`
-}
-
 func Register(c *gin.Context) {
 	// 判断这个用户名的是否存在
 
@@ -78,16 +67,7 @@ func Register(c *gin.Context) {
 	}
 }
 
-type UserLoginRequest struct {
-	UserName string `json:"username" form:"username"`
-	Password string `json:"password" form:"password"`
-}
-
-type UserLoginResponse struct {
-	Response
-	UserId uint   `json:"user_id"`
-	Token  string `json:"token"`
-}
+// ---Login---
 
 func Login(c *gin.Context) {
 	// 1.获取请求参数
@@ -145,21 +125,6 @@ func Login(c *gin.Context) {
 }
 
 // ---UserInfo----
-
-type UserInfoRequest struct {
-	UserId uint   `json:"user_id" form:"user_id" `
-	Token  string `json:"token" form:"token"`
-}
-
-type User struct {
-	repository.User
-	IsFollow bool `json:"is_follow"`
-}
-
-type UserInfoResponse struct {
-	Response
-	User User `json:"user"`
-}
 
 func UserInfo(c *gin.Context) {
 	var req UserInfoRequest

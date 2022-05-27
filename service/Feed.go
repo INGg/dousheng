@@ -8,17 +8,7 @@ import (
 	"time"
 )
 
-type FeedRequest struct {
-	LatestTime int64  `json:"latest_time,omitempty"`
-	Token      string `json:"token,omitempty"`
-}
-
-type FeedResponse struct {
-	StatusCode int32              `json:"status_code,omitempty"`
-	StatusMsg  string             `json:"status_msg,omitempty"`
-	VideoList  []repository.Video `json:"video_list,omitempty"`
-	NextTime   int64              `json:"next_time,omitempty"`
-}
+// ---Feed---
 
 //type repository.Video struct {
 //	repository.Video  repository.repository.Video
@@ -34,14 +24,15 @@ func Feed(c *gin.Context) {
 	}
 
 	// 获取10条Video列表
-	var video_list = make([]repository.Video, 32)
-	err = repository.GetVideoList(&video_list, 32, req.LatestTime)
+	var videoList = make([]repository.Video, 32)
+	err = repository.GetVideoList(&videoList, 32, req.LatestTime)
 
-	// 给获取到的video加上作者信息
-	for i, video := range video_list {
-		err := repository.FindUserById(video.AuthorID, &video_list[i].Author)
-		fmt.Println(video_list[i].Author)
-		if err != nil {
+	var resList = make([]Video, len(videoList))
+
+	// 给获取到的video加上作者信息和是否对这个视频点赞了
+	for i, video := range videoList {
+		// 加上作者信息
+		if err := repository.FindUserById(video.AuthorID, &videoList[i].Author); err != nil {
 			c.JSON(http.StatusOK, FeedResponse{
 				StatusCode: 1,
 				StatusMsg:  "get author error",
@@ -50,24 +41,23 @@ func Feed(c *gin.Context) {
 			})
 			return
 		}
+
+		resList[i].Video = video
+
+		resList[i].IsFavorite = repository.CheckIsFavorite(req.Token, video.ID)
+
+		fmt.Println(resList[i])
 	}
 
 	if err != nil {
 		panic("get video error")
 	}
 
-	//sort.Slice(video_list, func(i, j int) bool {
-	//	if video_list[i].PublishTime < video_list[j].PublishTime {
-	//		return true
-	//	}
-	//	return false
-	//})
-
 	// 返回结果
 	c.JSON(http.StatusOK, FeedResponse{
 		StatusCode: 0,
 		StatusMsg:  "ok",
-		VideoList:  video_list,
-		NextTime:   video_list[0].PublishTime,
+		VideoList:  resList,
+		NextTime:   videoList[0].PublishTime,
 	})
 }

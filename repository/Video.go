@@ -12,7 +12,7 @@ type Video struct {
 	ID            uint   `gorm:"primaryKey; not null" json:"id"`
 	PublishTime   int64  `gorm:"index" json:"publish_time"`
 	Author        User   `gorm:"foreignKey:AuthorID" json:"author"`
-	AuthorID      uint   `json:"author_id"`
+	AuthorID      uint   //`json:"author_id"`
 	PlayUrl       string `gorm:"type:varchar(128)" json:"play_url"`  // 播放地址
 	CoverUrl      string `gorm:"type:varchar(128)" json:"cover_url"` // 封面地址
 	FavoriteCount int64  `gorm:"not_null; default:0" json:"favorite_count"`
@@ -22,9 +22,10 @@ type Video struct {
 
 var VideoCount int64
 
-func GetVideoList(video_list *[]Video, lim int, ReqTime int64) error {
+// GetVideoList 获取视频列表给Feed
+func GetVideoList(videoList *[]Video, lim int, ReqTime int64) error {
 
-	res := db.Limit(lim).Order("publish_time desc").Where("publish_time <= ?", ReqTime).Find(video_list)
+	res := db.Limit(lim).Order("publish_time desc").Where("publish_time <= ?", ReqTime).Find(videoList)
 
 	//for id, v := range *video_list {
 	//	fmt.Println(id, v)
@@ -54,9 +55,9 @@ func InsertVideo(token string, filepath string, title string) error {
 
 	// 视频url
 	VideoCount++
-	play_url := filepath
+	play_url := "http://" + "192.168.98.14" + ":9090" + filepath
 	// 封面url
-	cover_url := ""
+	cover_url := "https://cdn.pixabay.com/photo/2016/03/27/18/10/bear-1283347_1280.jpg"
 	// 构造video
 
 	// 根据token获取视频上传者
@@ -90,10 +91,12 @@ func InsertVideo(token string, filepath string, title string) error {
 }
 
 // CheckIsFavorite 判断uid这个人是不是给这个视频点赞了
-func CheckIsFavorite(uid uint, videoId uint) bool {
+func CheckIsFavorite(token string, videoId uint) bool {
+	//_ := FindUserByToken()
 	return false
 }
 
+// FindAllVideoByUid 通过uid找到这个人发布的所有视频
 func FindAllVideoByUid(uid uint, VideoList *[]Video) error {
 
 	//var list []Video
