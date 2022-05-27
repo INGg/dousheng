@@ -18,14 +18,25 @@ import (
 func Feed(c *gin.Context) {
 	// 把请求数据拿出来
 	var req FeedRequest
-	err := c.BindJSON(&req)
-	if err != nil {
+
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, FeedResponse{
+			StatusCode: 1,
+			StatusMsg:  "feed should bind error",
+			VideoList:  nil,
+			NextTime:   0,
+		})
+	}
+
+	if req.LatestTime == 0 {
 		req.LatestTime = time.Now().Unix()
 	}
 
+	fmt.Printf("%+v\n", req)
+
 	// 获取10条Video列表
 	var videoList = make([]repository.Video, 32)
-	err = repository.GetVideoList(&videoList, 32, req.LatestTime)
+	err := repository.GetVideoList(&videoList, 32, req.LatestTime)
 
 	var resList = make([]Video, len(videoList))
 
@@ -46,7 +57,7 @@ func Feed(c *gin.Context) {
 
 		resList[i].IsFavorite = repository.CheckIsFavorite(req.Token, video.ID)
 
-		fmt.Println(resList[i])
+		fmt.Printf("%+v\n", resList[i])
 	}
 
 	if err != nil {

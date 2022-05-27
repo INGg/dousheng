@@ -78,7 +78,7 @@ func PublishList(c *gin.Context) {
 
 		var videoList []repository.Video
 
-		fmt.Println(req.UserId)
+		fmt.Printf("%+v\n", req.UserId)
 
 		if err := repository.FindAllVideoByUid(req.UserId, &videoList); err != nil {
 			fmt.Println("get published list error")
@@ -104,7 +104,7 @@ func PublishList(c *gin.Context) {
 		}
 
 		for i, video := range resList {
-			fmt.Println(i, video)
+			fmt.Printf("%v %+v\n", i, video)
 		}
 
 		fmt.Println("get published list successfully")

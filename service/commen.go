@@ -21,15 +21,15 @@ type User struct {
 }
 
 type FeedRequest struct {
-	LatestTime int64  `json:"latest_time,omitempty"`
-	Token      string `json:"token,omitempty"`
+	LatestTime int64  `json:"latest_time"`
+	Token      string `json:"token"`
 }
 
 type FeedResponse struct {
-	StatusCode int32   `json:"status_code,omitempty"`
-	StatusMsg  string  `json:"status_msg,omitempty"`
-	VideoList  []Video `json:"video_list,omitempty"`
-	NextTime   int64   `json:"next_time,omitempty"`
+	StatusCode int32   `json:"status_code"`
+	StatusMsg  string  `json:"status_msg"`
+	VideoList  []Video `json:"video_list"`
+	NextTime   int64   `json:"next_time"`
 }
 
 type PublishActionRequest struct {
