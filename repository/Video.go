@@ -55,7 +55,7 @@ func InsertVideo(token string, filepath string, title string) error {
 
 	// 视频url
 	VideoCount++
-	play_url := "http://" + DB_HOST + ":9090" + filepath
+	play_url := "http://" + "106.54.171.219" + ":9090" + filepath
 	// 封面url
 	cover_url := "https://cdn.pixabay.com/photo/2016/03/27/18/10/bear-1283347_1280.jpg"
 	// 构造video
