@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
@@ -40,25 +41,18 @@ func GenToken(username string) (string, error) {
 func ParseToken(tokenString string) (*DouShengClaims, error) {
 	// 解析token
 	// 如果自定义claim结构体需要使用
-	//token, err := jwt.ParseWithClaims(tokenString, &DouShengClaims{}, func(token *jwt.Token) (interface{}, error) {
-	//	return mySigningKey, nil
-	//})
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//// 对token对象中的claim进行类型断言
-	//if claims, ok := token.Claims.(*DouShengClaims); ok && token.Valid {
-	//	return claims, nil
-	//}
-	//return nil, errors.New("invalid token")
-
-	claims := &DouShengClaims{}
-
-	_, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &DouShengClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return mySigningKey, nil
 	})
-	return claims, err
+	if err != nil {
+		return nil, err
+	}
+
+	// 对token对象中的claim进行类型断言
+	if claims, ok := token.Claims.(*DouShengClaims); ok && token.Valid {
+		return claims, nil
+	}
+	return nil, errors.New("invalid token")
 }
 
 func JWTAuth() gin.HandlerFunc {
