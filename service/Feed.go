@@ -1,6 +1,7 @@
 package service
 
 import (
+	"demo1/middleware"
 	"demo1/repository"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -32,6 +33,20 @@ func Feed(c *gin.Context) {
 		req.LatestTime = time.Now().Unix()
 	}
 
+	// 解析token
+	if req.Token != "" {
+		_, err := middleware.ParseToken(req.Token)
+		if err != nil {
+			c.JSON(http.StatusOK, FeedResponse{
+				StatusCode: 1,
+				StatusMsg:  "token error",
+				VideoList:  nil,
+				NextTime:   0,
+			})
+			return
+		}
+	}
+
 	fmt.Printf("%+v\n", req)
 
 	// 获取10条Video列表
@@ -55,7 +70,7 @@ func Feed(c *gin.Context) {
 
 		resList[i].Video = video
 
-		resList[i].IsFavorite = repository.CheckIsFavorite(req.Token, video.ID)
+		resList[i].IsFavorite = repository.CheckIsFavorite(videoList[i].AuthorID, video.ID)
 
 		fmt.Printf("%+v\n", resList[i])
 	}

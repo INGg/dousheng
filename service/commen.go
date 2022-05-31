@@ -33,9 +33,10 @@ type FeedResponse struct {
 }
 
 type PublishActionRequest struct {
-	Token string                `json:"token" form:"token"`
-	Data  *multipart.FileHeader `json:"data" form:"data"`
-	Title string                `json:"title" form:"title"`
+	Token    string                `json:"token" form:"token"`
+	Data     *multipart.FileHeader `json:"data" form:"data"`
+	Title    string                `json:"title" form:"title"`
+	UserName string
 }
 
 type PublishActionResponse struct {
@@ -43,8 +44,9 @@ type PublishActionResponse struct {
 }
 
 type PublishListRequest struct {
-	Token  string `json:"token" form:"token"`
-	UserId uint   `json:"user_id" form:"user_id"`
+	Token    string `json:"token" form:"token"`
+	UserId   uint   `json:"user_id" form:"user_id"`
+	UserName string
 }
 
 type PublishListResponse struct {
@@ -53,8 +55,9 @@ type PublishListResponse struct {
 }
 
 type UserInfoRequest struct {
-	UserId uint   `json:"user_id" form:"user_id" `
-	Token  string `json:"token" form:"token"`
+	Token    string `json:"token" form:"token"`
+	UserId   uint   `json:"user_id" form:"user_id" `
+	UserName string
 }
 
 type UserInfoResponse struct {

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"demo1/middleware"
 	"demo1/repository"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -62,7 +63,7 @@ func Register(c *gin.Context) {
 				StatusMsg:  "user exited",
 			},
 			UserId: user.ID,
-			Token:  user.Token,
+			Token:  "",
 		})
 	}
 }
@@ -101,12 +102,25 @@ func Login(c *gin.Context) {
 	}
 
 	// 校验token，返回是否登陆成功
-	uid, token, ok := repository.CheckUserToken(req.UserName, req.Password)
+	uid, ok := repository.CheckUserPwd(req.UserName, req.Password)
 	if ok == false {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{
 				StatusCode: 1,
 				StatusMsg:  fmt.Sprintf("%v pwd error\n", req.UserName),
+			},
+			UserId: 0,
+			Token:  "",
+		})
+		return
+	}
+
+	token, err := middleware.GenToken(user.Name)
+	if err != nil {
+		c.JSON(http.StatusOK, UserLoginResponse{
+			Response: Response{
+				StatusCode: 1,
+				StatusMsg:  "%v gen token error",
 			},
 			UserId: 0,
 			Token:  "",
@@ -139,6 +153,7 @@ func UserInfo(c *gin.Context) {
 		})
 		return
 	}
+	req.UserName = c.GetString("username")
 
 	var user User
 	if err := repository.FindUserById(req.UserId, &user.User); err == nil {

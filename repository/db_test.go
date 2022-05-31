@@ -24,7 +24,7 @@ func TestFindAllVideoByUid(t *testing.T) {
 	InitDb()
 	id := 1
 	var video []Video
-	err := FindAllVideoByUid(int64(id), &video)
+	err := FindAllVideoByUid(uint(id), &video)
 	if err != nil {
 		return
 	}

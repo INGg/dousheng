@@ -11,15 +11,13 @@ import (
 
 func Publish(c *gin.Context) {
 	var req PublishActionRequest
+
 	// 绑定结构体
 	if err := c.ShouldBind(&req); err == nil {
-		if err != nil {
-			c.JSON(http.StatusOK, PublishActionResponse{Response{
-				StatusCode: 1,
-				StatusMsg:  "get video file error",
-			}})
-			return
-		}
+
+		req.UserName = c.GetString("username")
+		//fmt.Printf("%+v\n", req)
+
 		// 保存文件到文件夹
 		//finalName := filepath.Base(req.Data.Filename)
 		////saveFile := filepath.Join("./static/", finalName)
@@ -32,6 +30,7 @@ func Publish(c *gin.Context) {
 		//fmt.Println("上传文件成功")
 
 		if err := c.SaveUploadedFile(file, path); err != nil { // 保存失败返回失败信息
+			fmt.Println("video save error")
 			c.JSON(http.StatusOK, PublishActionResponse{
 				Response{
 					StatusCode: 1,
@@ -42,7 +41,8 @@ func Publish(c *gin.Context) {
 		}
 
 		// 文件信息写入数据库
-		if err := repository.InsertVideo(req.Token, path[1:], req.Title); err != nil {
+		if err := repository.InsertVideo(req.UserName, path[1:], req.Title); err != nil {
+			fmt.Println("video info insert database error")
 			c.JSON(http.StatusOK, PublishActionResponse{
 				Response{
 					StatusCode: 1,
@@ -53,6 +53,7 @@ func Publish(c *gin.Context) {
 		}
 
 		// 成功返回
+		fmt.Println(file.Filename + " uploaded successfully")
 		c.JSON(http.StatusOK, PublishActionResponse{
 			Response{
 				StatusCode: 0,
@@ -61,6 +62,8 @@ func Publish(c *gin.Context) {
 		})
 
 	} else {
+		fmt.Println("publish should bind error")
+		fmt.Println(err.Error())
 		c.JSON(http.StatusOK, PublishActionResponse{
 			Response{
 				StatusCode: 1,
@@ -76,9 +79,10 @@ func PublishList(c *gin.Context) {
 	var req PublishListRequest
 	if err := c.ShouldBind(&req); err == nil {
 
+		req.UserName = c.GetString("username")
 		var videoList []repository.Video
 
-		fmt.Printf("%+v\n", req.UserId)
+		fmt.Printf("PublishListRequest user id : %+v\n", req.UserId)
 
 		if err := repository.FindAllVideoByUid(req.UserId, &videoList); err != nil {
 			fmt.Println("get published list error")
@@ -100,11 +104,11 @@ func PublishList(c *gin.Context) {
 		for i, video := range videoList {
 			resList[i].Video = video
 			repository.FindUserById(video.AuthorID, &resList[i].Video.Author)
-			resList[i].IsFavorite = repository.CheckIsFavorite(req.Token, video.ID)
+			resList[i].IsFavorite = repository.CheckIsFavorite(resList[i].AuthorID, video.ID)
 		}
 
 		for i, video := range resList {
-			fmt.Printf("%v %+v\n", i, video)
+			fmt.Printf("resList[%v]: %+v\n", i, video)
 		}
 
 		fmt.Println("get published list successfully")

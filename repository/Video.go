@@ -47,7 +47,7 @@ func FindVideoByPathAndUid(path string, uid int64, video *Video) error {
 }
 
 // InsertVideo 将视频信息写入数据库，返回错误信息和错误
-func InsertVideo(token string, filepath string, title string) error {
+func InsertVideo(username string, filepath string, title string) error {
 
 	// 判断是否已经存在了这个视频
 
@@ -55,28 +55,28 @@ func InsertVideo(token string, filepath string, title string) error {
 
 	// 视频url
 	VideoCount++
-	play_url := "http://" + "106.54.171.219" + ":9090" + filepath
+	playUrl := "http://" + "192.168.25.14" + ":9090" + filepath
 	// 封面url
-	cover_url := "https://cdn.pixabay.com/photo/2016/03/27/18/10/bear-1283347_1280.jpg"
+	coverUrl := "https://cdn.pixabay.com/photo/2016/03/27/18/10/bear-1283347_1280.jpg"
 	// 构造video
 
 	// 根据token获取视频上传者
 	var author User
-	err := FindUserByToken(token, &author)
+	err := FindUserByName(username, &author)
 	if err != nil {
-		log.Fatal("user not exists")
+		log.Println("user not exists")
 		return err
 	}
 
-	fmt.Println(token, filepath, title)
+	fmt.Println(username, filepath, title)
 
 	// 存入数据库
 	res := db.Create(&Video{
 		PublishTime:   time.Now().Unix(),
 		Author:        author,
 		AuthorID:      author.ID,
-		PlayUrl:       play_url,
-		CoverUrl:      cover_url,
+		PlayUrl:       playUrl,
+		CoverUrl:      coverUrl,
 		FavoriteCount: 0,
 		CommentCount:  0,
 		Title:         title,
@@ -91,7 +91,7 @@ func InsertVideo(token string, filepath string, title string) error {
 }
 
 // CheckIsFavorite 判断uid这个人是不是给这个视频点赞了
-func CheckIsFavorite(token string, videoId uint) bool {
+func CheckIsFavorite(uid uint, videoId uint) bool {
 	//_ := FindUserByToken()
 	return false
 }

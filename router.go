@@ -1,6 +1,7 @@
 package main
 
 import (
+	"demo1/middleware"
 	"demo1/service"
 	"github.com/gin-gonic/gin"
 )
@@ -11,12 +12,20 @@ func initRouter(r *gin.Engine) {
 	apiRouter := r.Group("/douyin")
 
 	// basic apis
-	apiRouter.GET("/feed/", service.Feed)
-	apiRouter.GET("/user/", service.UserInfo)
-	apiRouter.POST("/user/register/", service.Register)
-	apiRouter.POST("/user/login/", service.Login)
-	apiRouter.POST("/publish/action/", service.Publish)
-	apiRouter.GET("/publish/list/", service.PublishList)
+	feedRouter := apiRouter.Group("/feed")
+	feedRouter.GET("/", service.Feed) // /feed/
+
+	userRouter := apiRouter.Group("/user")
+	userRouter.GET("/", service.UserInfo)           // /user/
+	userRouter.POST("/register/", service.Register) // /user/register/
+	userRouter.POST("/login/", service.Login)       // /user/login/
+
+	publishRouter := apiRouter.Group("/publish")
+
+	publishRouter.Use(middleware.JWTAuth())
+
+	publishRouter.POST("/action/", service.Publish)  // /publish/action/
+	publishRouter.GET("/list/", service.PublishList) // /publish/list/
 
 	// extra apis - I
 	//apiRouter.POST("/favorite/action/", controller.FavoriteAction)
