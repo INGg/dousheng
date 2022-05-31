@@ -6,12 +6,6 @@ import (
 	"gorm.io/gorm"
 )
 
-const DB_USERNAME = "root"
-const DB_PASSWORD = "123456abc"
-const DB_NAME = "test_db"
-const DB_HOST = "127.0.0.1"
-const DB_PORT = "3306"
-
 var db *gorm.DB
 
 func InitDb() *gorm.DB {
