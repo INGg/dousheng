@@ -87,7 +87,7 @@ func Feed(c *gin.Context) {
 	c.JSON(http.StatusOK, FeedResponse{
 		StatusCode: 0,
 		StatusMsg:  "ok",
-		VideoList:  resList,
+		VideoList:  &resList,
 		NextTime:   videoList[0].PublishTime,
 	})
 }

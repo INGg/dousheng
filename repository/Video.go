@@ -19,6 +19,8 @@ type Video struct {
 	FavoriteCount int64  `gorm:"not_null; default:0" json:"favorite_count"`
 	CommentCount  int64  `gorm:"not_null; default:0" json:"comment_count"`
 	Title         string ` json:"title"`
+
+	Comment []Comment
 }
 
 var VideoCount int64

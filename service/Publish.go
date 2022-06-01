@@ -125,7 +125,7 @@ func PublishList(c *gin.Context) {
 				StatusCode: 0,
 				StatusMsg:  "get published list successfully",
 			},
-			VideoList: resList,
+			VideoList: &resList,
 		})
 
 	} else {

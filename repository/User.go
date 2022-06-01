@@ -19,7 +19,7 @@ type User struct {
 	Password      string `gorm:"char(24) ; not null;"`
 	FollowCount   int64  `gorm:"not null; default:0" json:"follow_count"`   // 关注的人的数量
 	FollowerCount int64  `gorm:"not null; default:0" json:"follower_count"` // 粉丝总数
-	//IsFollow    bool   `json:"is_follow"`
+	IsFollow      bool   `gorm:"-" json:"is_follow"`
 }
 
 func TableName() string {
