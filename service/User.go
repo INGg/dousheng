@@ -32,9 +32,12 @@ func Register(c *gin.Context) {
 	// 2.向gorm发起请求判断用户是否存在
 	var user repository.User
 
-	if err := repository.FindUserByName(req.UserName, &user); err != nil { // 返回错误说明没找到
+	// 创建单例
+	userDAO := repository.NewUserDAO()
+
+	if err := userDAO.FindUserByName(req.UserName, &user); err != nil { // 返回错误说明没找到
 		// 创建用户
-		uid, token, err := repository.CreateUser(req.UserName, req.Password)
+		uid, token, err := userDAO.CreateUser(req.UserName, req.Password)
 		if err != nil { // 返回错误说明没有创建成功
 			c.JSON(http.StatusOK, UserResisterResponse{
 				Response: Response{
@@ -88,8 +91,10 @@ func Login(c *gin.Context) {
 
 	// 2.向gorm发起请求判断用户是否存在
 	var user repository.User
+	// 创建单例
+	userDAO := repository.NewUserDAO()
 
-	if err := repository.FindUserByName(req.UserName, &user); err != nil {
+	if err := userDAO.FindUserByName(req.UserName, &user); err != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{
 				StatusCode: 1,
@@ -102,7 +107,7 @@ func Login(c *gin.Context) {
 	}
 
 	// 校验token，返回是否登陆成功
-	uid, ok := repository.CheckUserPwd(req.UserName, req.Password)
+	uid, ok := userDAO.CheckUserPwd(req.UserName, req.Password)
 	if ok == false {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{
@@ -155,8 +160,11 @@ func UserInfo(c *gin.Context) {
 	}
 	req.UserName = c.GetString("username")
 
+	// 创建单例
+	userDAO := repository.NewUserDAO()
+
 	var user User
-	if err := repository.FindUserById(req.UserId, &user.User); err == nil {
+	if err := userDAO.FindUserById(req.UserId, &user.User); err == nil {
 		c.JSON(http.StatusOK, UserInfoResponse{
 			Response: Response{
 				StatusCode: 0,

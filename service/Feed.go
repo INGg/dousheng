@@ -47,18 +47,22 @@ func Feed(c *gin.Context) {
 		}
 	}
 
-	fmt.Printf("%+v\n", req)
+	//fmt.Printf("%+v\n", req)
+
+	// 创建单例
+	userDAO := repository.NewUserDAO()
+	videoDAO := repository.NewVideoDAO()
 
 	// 获取10条Video列表
 	var videoList = make([]repository.Video, 32)
-	err := repository.GetVideoList(&videoList, 32, req.LatestTime)
+	err := videoDAO.GetVideoList(&videoList, 32, req.LatestTime)
 
 	var resList = make([]Video, len(videoList))
 
 	// 给获取到的video加上作者信息和是否对这个视频点赞了
 	for i, video := range videoList {
 		// 加上作者信息
-		if err := repository.FindUserById(video.AuthorID, &videoList[i].Author); err != nil {
+		if err := userDAO.FindUserById(video.AuthorID, &videoList[i].Author); err != nil {
 			c.JSON(http.StatusOK, FeedResponse{
 				StatusCode: 1,
 				StatusMsg:  "get author error",
@@ -70,7 +74,7 @@ func Feed(c *gin.Context) {
 
 		resList[i].Video = video
 
-		resList[i].IsFavorite = repository.CheckIsFavorite(videoList[i].AuthorID, video.ID)
+		resList[i].IsFavorite = videoDAO.CheckIsFavorite(videoList[i].AuthorID, video.ID)
 
 		fmt.Printf("%+v\n", resList[i])
 	}

@@ -40,8 +40,11 @@ func Publish(c *gin.Context) {
 			return
 		}
 
+		// 创建单例
+		videoDAO := repository.NewVideoDAO()
+
 		// 文件信息写入数据库
-		if err := repository.InsertVideo(req.UserName, path[1:], req.Title); err != nil {
+		if err := videoDAO.InsertVideo(req.UserName, path[1:], req.Title); err != nil {
 			fmt.Println("video info insert database error")
 			c.JSON(http.StatusOK, PublishActionResponse{
 				Response{
@@ -80,11 +83,16 @@ func PublishList(c *gin.Context) {
 	if err := c.ShouldBind(&req); err == nil {
 
 		req.UserName = c.GetString("username")
-		var videoList []repository.Video
 
 		fmt.Printf("PublishListRequest user id : %+v\n", req.UserId)
 
-		if err := repository.FindAllVideoByUid(req.UserId, &videoList); err != nil {
+		// 创建单例
+		userDAO := repository.NewUserDAO()
+		videoDAO := repository.NewVideoDAO()
+
+		var videoList []repository.Video
+
+		if err := videoDAO.FindAllVideoByUid(req.UserId, &videoList); err != nil {
 			fmt.Println("get published list error")
 			c.JSON(http.StatusOK, PublishListResponse{
 				Response: Response{
@@ -103,8 +111,8 @@ func PublishList(c *gin.Context) {
 
 		for i, video := range videoList {
 			resList[i].Video = video
-			repository.FindUserById(video.AuthorID, &resList[i].Video.Author)
-			resList[i].IsFavorite = repository.CheckIsFavorite(resList[i].AuthorID, video.ID)
+			userDAO.FindUserById(video.AuthorID, &resList[i].Video.Author)
+			resList[i].IsFavorite = videoDAO.CheckIsFavorite(resList[i].AuthorID, video.ID)
 		}
 
 		for i, video := range resList {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"gorm.io/gorm"
 	"log"
+	"sync"
 	"time"
 )
 
@@ -22,14 +23,25 @@ type Video struct {
 
 var VideoCount int64
 
+type VideoDAO struct {
+}
+
+var (
+	videoDAO  *VideoDAO
+	videoOnce sync.Once
+)
+
+func NewVideoDAO() *VideoDAO {
+	videoOnce.Do(func() {
+		videoDAO = &VideoDAO{}
+	})
+	return videoDAO
+}
+
 // GetVideoList 获取视频列表给Feed
-func GetVideoList(videoList *[]Video, lim int, ReqTime int64) error {
+func (v *VideoDAO) GetVideoList(videoList *[]Video, lim int, ReqTime int64) error {
 
 	res := db.Limit(lim).Order("publish_time desc").Where("publish_time <= ?", ReqTime).Find(videoList)
-
-	//for id, v := range *video_list {
-	//	fmt.Println(id, v)
-	//}
 
 	if res.Error != nil {
 		return res.Error
@@ -38,7 +50,7 @@ func GetVideoList(videoList *[]Video, lim int, ReqTime int64) error {
 	return nil
 }
 
-func FindVideoByPathAndUid(path string, uid int64, video *Video) error {
+func (v *VideoDAO) FindVideoByPathAndUid(path string, uid int64, video *Video) error {
 	if res := db.Model(Video{}).Where("play_url = ? AND author_id = ?", path, uid).First(video); errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return res.Error
 	} else {
@@ -47,22 +59,22 @@ func FindVideoByPathAndUid(path string, uid int64, video *Video) error {
 }
 
 // InsertVideo 将视频信息写入数据库，返回错误信息和错误
-func InsertVideo(username string, filepath string, title string) error {
+func (v *VideoDAO) InsertVideo(username string, filepath string, title string) error {
 
-	// 判断是否已经存在了这个视频
+	// TODO 判断是否已经存在了这个视频
 
 	// 生成url
-
 	// 视频url
 	VideoCount++
-	playUrl := "http://" + "192.168.25.14" + ":9090" + filepath
+	playUrl := "http://" + IP + HOST + filepath
 	// 封面url
 	coverUrl := "https://cdn.pixabay.com/photo/2016/03/27/18/10/bear-1283347_1280.jpg"
 	// 构造video
 
 	// 根据token获取视频上传者
 	var author User
-	err := FindUserByName(username, &author)
+	userD := NewUserDAO() // 创建DAO
+	err := userD.FindUserByName(username, &author)
 	if err != nil {
 		log.Println("user not exists")
 		return err
@@ -91,14 +103,13 @@ func InsertVideo(username string, filepath string, title string) error {
 }
 
 // CheckIsFavorite 判断uid这个人是不是给这个视频点赞了
-func CheckIsFavorite(uid uint, videoId uint) bool {
+func (v *VideoDAO) CheckIsFavorite(uid uint, videoId uint) bool {
 	//_ := FindUserByToken()
 	return false
 }
 
 // FindAllVideoByUid 通过uid找到这个人发布的所有视频
-func FindAllVideoByUid(uid uint, VideoList *[]Video) error {
-
+func (v *VideoDAO) FindAllVideoByUid(uid uint, VideoList *[]Video) error {
 	//var list []Video
 	res := db.Model(&Video{}).Where("author_id = ?", uid).Find(VideoList)
 	//fmt.Println(len(*VideoList))

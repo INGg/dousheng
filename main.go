@@ -2,21 +2,15 @@ package main
 
 import (
 	"demo1/repository"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
-var IP string
-
-func inputIp() string {
-	fmt.Scan(&IP)
-	return IP
-}
-
 func main() {
+	// 初始化
 	// 连接数据库
 	repository.InitDb()
+	// TODO 检查static文件夹是否存在，不存在就创建
 
 	// 启动gin引擎
 	r := gin.Default()
