@@ -74,7 +74,7 @@ func (v *VideoDAO) InsertVideo(username string, filepath string, title string) e
 	// 根据token获取视频上传者
 	var author User
 	userD := NewUserDAO() // 创建DAO
-	err := userD.FindUserByName(username, &author)
+	err := userD.FindUserIDByName(username, &author)
 	if err != nil {
 		log.Println("user not exists")
 		return err
@@ -104,7 +104,7 @@ func (v *VideoDAO) InsertVideo(username string, filepath string, title string) e
 
 // CheckIsFavorite 判断uid这个人是不是给这个视频点赞了
 func (v *VideoDAO) CheckIsFavorite(uid uint, videoId uint) bool {
-	//_ := FindUserByToken()
+	// TODO 这个是不是应该写在Favorite里面
 	return false
 }
 

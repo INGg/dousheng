@@ -12,11 +12,10 @@ func main() {
 	repository.InitDb()
 	// TODO 检查static文件夹是否存在，不存在就创建
 
-	// 启动gin引擎
+	// 准备启动gin引擎
 	r := gin.Default()
 
 	// 处理静态文件
-	//dir, _ := os.Getwd()
 	r.StaticFS("/static", http.Dir("./static"))
 
 	// 启动路由

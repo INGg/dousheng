@@ -35,7 +35,7 @@ func Register(c *gin.Context) {
 	// 创建单例
 	userDAO := repository.NewUserDAO()
 
-	if err := userDAO.FindUserByName(req.UserName, &user); err != nil { // 返回错误说明没找到
+	if err := userDAO.FindUserIDByName(req.UserName, &user); err != nil { // 返回错误说明没找到
 		// 创建用户
 		uid, token, err := userDAO.CreateUser(req.UserName, req.Password)
 		if err != nil { // 返回错误说明没有创建成功
@@ -94,7 +94,7 @@ func Login(c *gin.Context) {
 	// 创建单例
 	userDAO := repository.NewUserDAO()
 
-	if err := userDAO.FindUserByName(req.UserName, &user); err != nil {
+	if err := userDAO.FindUserIDByName(req.UserName, &user); err != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{
 				StatusCode: 1,

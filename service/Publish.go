@@ -112,7 +112,7 @@ func PublishList(c *gin.Context) {
 		for i, video := range videoList {
 			resList[i].Video = video
 			userDAO.FindUserById(video.AuthorID, &resList[i].Video.Author)
-			resList[i].IsFavorite = videoDAO.CheckIsFavorite(resList[i].AuthorID, video.ID)
+			//resList[i].IsFavorite = videoDAO.CheckIsFavorite(resList[i].AuthorID, video.ID)
 		}
 
 		for i, video := range resList {

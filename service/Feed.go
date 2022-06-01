@@ -55,7 +55,7 @@ func Feed(c *gin.Context) {
 
 	// 获取10条Video列表
 	var videoList = make([]repository.Video, 32)
-	err := videoDAO.GetVideoList(&videoList, 32, req.LatestTime)
+	err := videoDAO.GetVideoList(&videoList, 30, req.LatestTime)
 
 	var resList = make([]Video, len(videoList))
 
