@@ -113,3 +113,8 @@ func (u *UserDAO) JudgeAFollowB(uida int64, uidb int64) bool {
 func (u *UserDAO) AFollowB(ctx *gin.Context, op int32) error {
 	return nil
 }
+
+//func (u *UserDAO) GetUserList(uid *[]uint, resUser *[]User) error {
+//var res []User
+//db.Find(&User{})
+//}

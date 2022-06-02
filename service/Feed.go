@@ -22,10 +22,12 @@ func Feed(c *gin.Context) {
 
 	if err := c.ShouldBind(&req); err != nil {
 		c.JSON(http.StatusBadRequest, FeedResponse{
-			StatusCode: 1,
-			StatusMsg:  "feed should bind error",
-			VideoList:  nil,
-			NextTime:   0,
+			Response: Response{
+				StatusCode: 1,
+				StatusMsg:  "feed should bind error",
+			},
+			VideoList: nil,
+			NextTime:  0,
 		})
 	}
 
@@ -38,10 +40,12 @@ func Feed(c *gin.Context) {
 		_, err := middleware.ParseToken(req.Token)
 		if err != nil {
 			c.JSON(http.StatusOK, FeedResponse{
-				StatusCode: 1,
-				StatusMsg:  "token error",
-				VideoList:  nil,
-				NextTime:   0,
+				Response: Response{
+					StatusCode: 1,
+					StatusMsg:  "token error",
+				},
+				VideoList: nil,
+				NextTime:  0,
 			})
 			return
 		}
@@ -64,10 +68,12 @@ func Feed(c *gin.Context) {
 		// 加上作者信息
 		if err := userDAO.FindUserById(video.AuthorID, &videoList[i].Author); err != nil {
 			c.JSON(http.StatusOK, FeedResponse{
-				StatusCode: 1,
-				StatusMsg:  "get author error",
-				VideoList:  nil,
-				NextTime:   0,
+				Response: Response{
+					StatusCode: 1,
+					StatusMsg:  "get author error",
+				},
+				VideoList: nil,
+				NextTime:  0,
 			})
 			return
 		}
@@ -85,9 +91,11 @@ func Feed(c *gin.Context) {
 
 	// 返回结果
 	c.JSON(http.StatusOK, FeedResponse{
-		StatusCode: 0,
-		StatusMsg:  "ok",
-		VideoList:  &resList,
-		NextTime:   videoList[0].PublishTime,
+		Response: Response{
+			StatusCode: 0,
+			StatusMsg:  "ok",
+		},
+		VideoList: &resList,
+		NextTime:  videoList[0].PublishTime,
 	})
 }

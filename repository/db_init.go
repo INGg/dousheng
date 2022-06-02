@@ -12,7 +12,7 @@ func InitDb() *gorm.DB {
 	db = connectDB()
 	db.AutoMigrate(&User{})
 	db.AutoMigrate(&Video{})
-	//db.AutoMigrate(Comment{})
+	db.AutoMigrate(&Comment{})
 
 	// 初始化总的数量
 	db.Model(&User{}).Count(&UserCount)
