@@ -69,6 +69,11 @@ func (v *VideoDAO) InsertVideo(uid uint, filepath string, title string) error {
 	// 封面url
 	coverUrl := "https://cdn.pixabay.com/photo/2016/03/27/18/10/bear-1283347_1280.jpg"
 	// 构造video
+	var author User
+	userDAO := NewUserDAO()
+	if err := userDAO.FindUserById(uid, &author); err != nil { // 找到作者
+		return err
+	}
 
 	// 根据token获取视频上传者
 	fmt.Println(uid, filepath, title)
@@ -76,6 +81,7 @@ func (v *VideoDAO) InsertVideo(uid uint, filepath string, title string) error {
 	// 存入数据库
 	res := db.Create(&Video{
 		PublishTime:   time.Now().Unix(),
+		Author:        author,
 		AuthorID:      uid,
 		PlayUrl:       playUrl,
 		CoverUrl:      coverUrl,

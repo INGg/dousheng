@@ -89,6 +89,7 @@ func JWTAuth() gin.HandlerFunc {
 		c.Set("username", dc.Username)
 		c.Set("user_id", dc.UserID)
 		fmt.Println("jwt username : ", dc.Username)
+		fmt.Println("jwt user id : ", dc.UserID)
 		//c.Next()
 	}
 }

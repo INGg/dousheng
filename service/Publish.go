@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"strconv"
 )
 
 // ---Publish---
@@ -17,7 +16,7 @@ func Publish(c *gin.Context) {
 	if err := c.ShouldBind(&req); err == nil {
 
 		req.UserName = c.GetString("username")
-		uid, _ := strconv.Atoi(c.GetString("user_id"))
+		uid := c.GetUint("user_id")
 		//fmt.Printf("%+v\n", req)
 
 		// 保存文件到文件夹
