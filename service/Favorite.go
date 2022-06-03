@@ -54,21 +54,21 @@ func FavoriteAction(c *gin.Context) {
 
 	if req.ActionType == 1 {
 		//点赞操作
-		//video.FavoriteCount++
-		if err := favoriteDAO.AddFavoriteCount(req.VideoId); err != nil {
-			c.JSON(http.StatusOK, UserFavoriteResponse{
-				Response: Response{
-					StatusCode: 1,
-					StatusMsg:  "Add favorite count error",
-				},
-			})
-		}
 		//将该视频加入用户的点赞列表
 		if err := favoriteDAO.Favorite(req.UserId, req.VideoId); err != nil {
 			c.JSON(http.StatusOK, UserFavoriteResponse{
 				Response: Response{
 					StatusCode: 1,
 					StatusMsg:  "Add into favorite list error",
+				},
+			})
+		}
+		//video.FavoriteCount++
+		if err := favoriteDAO.AddFavoriteCount(req.VideoId); err != nil {
+			c.JSON(http.StatusOK, UserFavoriteResponse{
+				Response: Response{
+					StatusCode: 1,
+					StatusMsg:  "Add favorite count error",
 				},
 			})
 		}
@@ -80,21 +80,21 @@ func FavoriteAction(c *gin.Context) {
 		})
 	} else {
 		//取消点赞
-		//video.FavoriteCount--
-		if err := favoriteDAO.ReduceFavoriteCount(req.VideoId); err != nil {
-			c.JSON(http.StatusOK, UserFavoriteResponse{
-				Response: Response{
-					StatusCode: 1,
-					StatusMsg:  "Reduce favorite count error",
-				},
-			})
-		}
 		//将该视频从用户的点赞列表移除
 		if err := favoriteDAO.UnFavorite(req.UserId, req.VideoId); err != nil {
 			c.JSON(http.StatusOK, UserFavoriteResponse{
 				Response: Response{
 					StatusCode: 1,
 					StatusMsg:  "Delete from favorite list error",
+				},
+			})
+		}
+		//video.FavoriteCount--
+		if err := favoriteDAO.ReduceFavoriteCount(req.VideoId); err != nil {
+			c.JSON(http.StatusOK, UserFavoriteResponse{
+				Response: Response{
+					StatusCode: 1,
+					StatusMsg:  "Reduce favorite count error",
 				},
 			})
 		}
