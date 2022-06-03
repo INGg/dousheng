@@ -118,3 +118,24 @@ type CommentListResponse struct {
 	Response
 	CommentList *[]Comment
 }
+
+type UserFavoriteRequest struct {
+	UserId     uint   `json:"user_id"`
+	Token      string `json:"token"`
+	VideoId    uint   `json:"video_id"`
+	ActionType int32  `json:"action_type"`
+}
+
+type UserFavoriteResponse struct {
+	Response
+}
+
+type UserFavoriteListRequest struct {
+	UserId     uint   `json:"user_id"`
+	Token      string `json:"token"`
+}
+
+type UserFavoriteListResponse struct {
+	Response
+	VideoList []repository.Video `json:"video_list"`
+}

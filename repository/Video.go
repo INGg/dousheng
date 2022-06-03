@@ -123,3 +123,12 @@ func (v *VideoDAO) FindAllVideoByUid(uid uint, VideoList *[]Video) error {
 	}
 	return nil
 }
+
+// FindVideoById 通过id找到Video
+func FindVideoById(uid uint, video *Video) error {
+	if res := db.Model(User{}).Where("author_id = ?", uid).First(video); errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		fmt.Println("find user error")
+		return res.Error
+	}
+	return nil
+}
