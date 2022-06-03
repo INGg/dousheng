@@ -31,27 +31,26 @@ func NewFavoriteDAO() *FavoriteDAO {
 	return favoriteDAO
 }
 
-func (f *FavoriteDAO) ChangeFavorite(uid uint, vid uint, action_type int8) error {
-	if action_type == 1 {
-		//存入点赞记录
-		res := db.Create(&Favorite{
-			UserID:  uid,
-			VideoID: vid,
-		})
-		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-			log.Print("create video error")
-			return res.Error
-		}
+func (f *FavoriteDAO) Favorite(uid uint, vid uint) error {
+	//存入点赞记录
+	res := db.Create(&Favorite{
+		UserID:  uid,
+		VideoID: vid,
+	})
+	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		log.Print("create video error")
+		return res.Error
+	}
+	fmt.Println("insert favorite info ok")
+	return nil 
+}
 
-		fmt.Println("insert favorite info ok")
-		return nil
-	} else {
-		//删除点赞记录
-		res := db.Where(&Favorite{UserID: uid, VideoID: vid}).Delete(&Favorite{})
-		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-			log.Print("delete video error")
-			return res.Error
-		}
+func (f *FavoriteDAO) UnFavorite(uid uint, vid uint) error {
+	//删除点赞记录
+	res := db.Where(&Favorite{UserID: uid, VideoID: vid}).Delete(&Favorite{})
+	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		log.Print("delete video error")
+		return res.Error
 	}
 	return nil
 }
