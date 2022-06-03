@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"sync"
 
 	"gorm.io/gorm"
 )
@@ -15,7 +16,22 @@ type Favorite struct {
 	Deleted gorm.DeletedAt
 }
 
-func ChangeFavorite(uid uint, vid uint, action_type int8) error {
+type FavoriteDAO struct {
+}
+
+var (
+	favoriteDAO  *FavoriteDAO
+	favoriteOnce sync.Once
+)
+
+func NewFavoriteDAO() *FavoriteDAO {
+	favoriteOnce.Do(func() {
+		favoriteDAO = &FavoriteDAO{}
+	})
+	return favoriteDAO
+}
+
+func (f *FavoriteDAO) ChangeFavorite(uid uint, vid uint, action_type int8) error {
 	if action_type == 1 {
 		//存入点赞记录
 		res := db.Create(&Favorite{
@@ -40,7 +56,7 @@ func ChangeFavorite(uid uint, vid uint, action_type int8) error {
 	return nil
 }
 
-func FindFavoriteVideoByUid(uid uint, videoList *[]Video) error {
+func (f *FavoriteDAO) FindFavoriteVideoByUid(uid uint, videoList *[]Video) error {
 	var vids []uint
 	var video Video
 	//将扫描到的vid存到vids切片里
@@ -49,8 +65,9 @@ func FindFavoriteVideoByUid(uid uint, videoList *[]Video) error {
 		log.Print("vid can't find error")
 		return res.Error
 	}
+	videoDAO := NewVideoDAO()
 	for i := range vids {
-		FindVideoById(vids[i], &video)
+		videoDAO.FindVideoById(vids[i], &video)
 		*videoList = append(*videoList, video)
 	}
 	return nil

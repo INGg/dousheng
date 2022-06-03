@@ -17,14 +17,16 @@ const TokenExpireDuration = time.Hour * 24
 type DouShengClaims struct {
 	// 自行添加的字段
 	Username string `json:"username"`
+	UserID   uint   `json:"user_id"`
 	jwt.RegisteredClaims
 }
 
 // GenToken 生成token
-func GenToken(username string) (string, error) {
+func GenToken(username string, uid uint) (string, error) {
 	// 创建一个自己的声明
 	claims := DouShengClaims{
 		Username: username,
+		UserID:   uid,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(TokenExpireDuration)),
 			Issuer:    "lzd",
@@ -85,6 +87,7 @@ func JWTAuth() gin.HandlerFunc {
 		}
 
 		c.Set("username", dc.Username)
+		c.Set("user_id", dc.UserID)
 		fmt.Println("jwt username : ", dc.Username)
 		//c.Next()
 	}

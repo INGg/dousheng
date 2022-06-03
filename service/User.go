@@ -120,7 +120,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	token, err := middleware.GenToken(user.Name)
+	token, err := middleware.GenToken(user.Name, user.ID)
 	if err != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{

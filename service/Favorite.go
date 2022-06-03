@@ -3,6 +3,7 @@ package service
 import (
 	"demo1/repository"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -23,7 +24,17 @@ func FavoriteAction(c *gin.Context) {
 		})
 	}
 
-	if err := repository.FindUserByToken(req.Token, &user); err != nil {
+	// 从token中提取相关信息
+	user.Name = c.GetString("username")
+	uid, _ := strconv.Atoi(c.GetString("user_id"))
+	user.ID = uint(uid)
+
+	// 创建单例
+	favoriteDAO := repository.NewFavoriteDAO()
+	userDAO := repository.NewUserDAO()
+	videoDAO := repository.NewVideoDAO()
+
+	if err := userDAO.FindUserById(user.ID, &user); err != nil {
 		c.JSON(http.StatusOK, UserFavoriteResponse{
 			Response: Response{
 				StatusCode: 1,
@@ -32,7 +43,7 @@ func FavoriteAction(c *gin.Context) {
 		})
 	}
 
-	if err := repository.FindVideoById(req.VideoId, &video); err != nil {
+	if err := videoDAO.FindVideoById(req.VideoId, &video); err != nil {
 		c.JSON(http.StatusOK, UserFavoriteResponse{
 			Response: Response{
 				StatusCode: 1,
@@ -45,7 +56,7 @@ func FavoriteAction(c *gin.Context) {
 		//点赞操作
 		video.FavoriteCount++
 		//将该视频加入用户的点赞列表
-		if err := repository.ChangeFavorite(req.UserId, req.VideoId, 1); err != nil {
+		if err := favoriteDAO.ChangeFavorite(req.UserId, req.VideoId, 1); err != nil {
 			c.JSON(http.StatusOK, UserFavoriteResponse{
 				Response: Response{
 					StatusCode: 1,
@@ -63,7 +74,7 @@ func FavoriteAction(c *gin.Context) {
 		//取消点赞
 		video.FavoriteCount--
 		//将该视频从用户的点赞列表移除
-		if err := repository.ChangeFavorite(req.UserId, req.VideoId, 2); err != nil {
+		if err := favoriteDAO.ChangeFavorite(req.UserId, req.VideoId, 2); err != nil {
 			c.JSON(http.StatusOK, UserFavoriteResponse{
 				Response: Response{
 					StatusCode: 1,
@@ -95,7 +106,11 @@ func FavoriteList(c *gin.Context) {
 			VideoList: nil,
 		})
 	}
-	if err := repository.FindFavoriteVideoByUid(req.UserId, &videoList); err != nil {
+
+	// 创建单例
+	favoriteDAO := repository.NewFavoriteDAO()
+
+	if err := favoriteDAO.FindFavoriteVideoByUid(req.UserId, &videoList); err != nil {
 		c.JSON(http.StatusOK, UserFavoriteListResponse{
 			Response: Response{
 				StatusCode: 1,

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strconv"
 )
 
 // ---Publish---
@@ -16,6 +17,7 @@ func Publish(c *gin.Context) {
 	if err := c.ShouldBind(&req); err == nil {
 
 		req.UserName = c.GetString("username")
+		uid, _ := strconv.Atoi(c.GetString("user_id"))
 		//fmt.Printf("%+v\n", req)
 
 		// 保存文件到文件夹
@@ -44,7 +46,7 @@ func Publish(c *gin.Context) {
 		videoDAO := repository.NewVideoDAO()
 
 		// 文件信息写入数据库
-		if err := videoDAO.InsertVideo(req.UserName, path[1:], req.Title); err != nil {
+		if err := videoDAO.InsertVideo(uint(uid), path[1:], req.Title); err != nil {
 			fmt.Println("video info insert database error")
 			c.JSON(http.StatusOK, PublishActionResponse{
 				Response{

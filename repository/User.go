@@ -42,8 +42,8 @@ func NewUserDAO() *UserDAO {
 }
 
 // MakeToken 构造token
-func MakeToken(username string) (string, error) {
-	return middleware.GenToken(username)
+func MakeToken(username string, uid uint) (string, error) {
+	return middleware.GenToken(username, uid)
 }
 
 // FindUserIDByName 通过名字判断用户是否存在
@@ -81,7 +81,7 @@ func (u *UserDAO) CreateUser(username string, pwd string) (uid uint, token strin
 	}
 
 	// 创建token
-	token, err = MakeToken(username)
+	token, err = MakeToken(username, user.ID)
 	if err != nil {
 		return 0, "", err
 	}

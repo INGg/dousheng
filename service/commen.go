@@ -15,9 +15,7 @@ type Video struct {
 	IsFavorite bool
 }
 
-type User struct {
-	repository.User
-}
+type User repository.User
 
 type FeedRequest struct {
 	LatestTime int64  `json:"latest_time"`
@@ -25,10 +23,9 @@ type FeedRequest struct {
 }
 
 type FeedResponse struct {
-	StatusCode int32    `json:"status_code"`
-	StatusMsg  string   `json:"status_msg"`
-	VideoList  *[]Video `json:"video_list"`
-	NextTime   int64    `json:"next_time"`
+	Response
+	VideoList *[]Video `json:"video_list"`
+	NextTime  int64    `json:"next_time"`
 }
 
 type PublishActionRequest struct {
@@ -86,8 +83,9 @@ type UserResisterResponse struct {
 	Token  string `json:"token"`
 }
 
+// Comment 这里的comment和repository里的comment本质是没有太大的区别，这里只是为了请求好返回
 type Comment struct {
-	Id uint
+	ID uint
 	User
 	Content    string `json:"content"`
 	CreateDate string `json:"create_date"` // 评论发布日期，格式 mm-dd
@@ -99,7 +97,7 @@ type CommentActionRequest struct {
 	VideoId     uint   `json:"video_id"`
 	ActionType  uint8  `json:"action_type"`
 	CommentText string `json:"comment_text"` // 用户填写的评论内容，在action_type=1的时候使用
-	CommentId   string `json:"comment_id"`   // 要删除的评论id，在action_type=2的时候使用
+	CommentId   uint   `json:"comment_id"`   // 要删除的评论id，在action_type=2的时候使用
 	UserName    string
 }
 
@@ -131,8 +129,8 @@ type UserFavoriteResponse struct {
 }
 
 type UserFavoriteListRequest struct {
-	UserId     uint   `json:"user_id"`
-	Token      string `json:"token"`
+	UserId uint   `json:"user_id"`
+	Token  string `json:"token"`
 }
 
 type UserFavoriteListResponse struct {
