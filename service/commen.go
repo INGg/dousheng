@@ -118,3 +118,28 @@ type CommentListResponse struct {
 	Response
 	CommentList *[]Comment
 }
+
+type FollowActionRequest struct {
+	UserId     uint   `json:"user_id" form:"user_id" `
+	Token      string `json:"token" form:"token"`
+	ToUserId   uint   `json:"to_user_id" form:"to_user_id"`
+	ActionType uint   `json:"action_type"`
+}
+type UserFollowListRequest struct {
+	UserId uint   `json:"user_id" form:"user_id" `
+	Token  string `json:"token" form:"token"`
+}
+type UserFollowListResponse struct {
+	Response
+	userList []repository.User `json:"user_list"`
+}
+
+type UserFollowerListRequest struct {
+	UserId uint   `json:"user_id" form:"user_id" `
+	Token  string `json:"token" form:"token"`
+}
+
+type UserFollowerListResponse struct {
+	Response
+	userList []repository.User `json:"user_list"`
+}
