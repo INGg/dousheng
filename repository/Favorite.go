@@ -72,3 +72,21 @@ func (f *FavoriteDAO) FindFavoriteVideoByUid(uid uint, videoList *[]Video) error
 	}
 	return nil
 }
+
+func (f *FavoriteDAO) AddFavoriteCount(vid uint) error {
+	res := db.Model(&Video{}).Where("id = ?", vid).Update("comment_count", gorm.Expr("comment_count + ?", 1))
+	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		log.Print("Add favorite count error")
+		return res.Error
+	}
+	return nil
+}
+
+func (f *FavoriteDAO) ReduceFavoriteCount(vid uint) error {
+	res := db.Model(&Video{}).Where("id = ?", vid).Update("comment_count", gorm.Expr("comment_count - ?", 1))
+	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		log.Print("Reduce favorite count error")
+		return res.Error
+	}
+	return nil
+}
