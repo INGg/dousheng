@@ -85,19 +85,19 @@ type UserResisterResponse struct {
 
 // Comment 这里的comment和repository里的comment本质是没有太大的区别，这里只是为了请求好返回
 type Comment struct {
-	ID uint
-	User
+	ID         uint   `json:"id"`
+	User       User   `json:"user"`
 	Content    string `json:"content"`
 	CreateDate string `json:"create_date"` // 评论发布日期，格式 mm-dd
 }
 
 type CommentActionRequest struct {
-	UserId      uint   `json:"user_id"`
-	Token       string `json:"token"`
-	VideoId     uint   `json:"video_id"`
-	ActionType  uint8  `json:"action_type"`
-	CommentText string `json:"comment_text"` // 用户填写的评论内容，在action_type=1的时候使用
-	CommentId   uint   `json:"comment_id"`   // 要删除的评论id，在action_type=2的时候使用
+	UserId      uint
+	Token       string `json:"token" form:"token"`
+	VideoId     uint   `json:"video_id" form:"video_id"`
+	ActionType  uint8  `json:"action_type" form:"action_type"`
+	CommentText string `json:"comment_text,omitempty" form:"comment_text"` // 用户填写的评论内容，在action_type=1的时候使用
+	CommentId   uint   `json:"comment_id,omitempty" form:"comment_id"`     // 要删除的评论id，在action_type=2的时候使用
 	UserName    string
 }
 
@@ -107,16 +107,15 @@ type CommentActionResponse struct {
 }
 
 type CommentListRequest struct {
-	Token    string `json:"token"`
-	VideoId  uint   `json:"video_id"`
+	Token    string `json:"token" form:"token"`
+	VideoId  uint   `json:"video_id" form:"video_id"`
 	UserName string
 }
 
 type CommentListResponse struct {
 	Response
-	CommentList *[]Comment
+	CommentList *[]Comment `json:"comment_list"`
 }
-
 
 type FollowActionRequest struct {
 	UserId     uint   `json:"user_id" form:"user_id" `

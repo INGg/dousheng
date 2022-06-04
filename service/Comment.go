@@ -24,6 +24,7 @@ func CommentAction(c *gin.Context) {
 
 	// 从解析的token中取出username
 	req.UserName = c.GetString("username") //  不过好像没用
+	req.UserId = c.GetUint("user_id")
 
 	commentDao := repository.NewCommentDAO()
 	userDao := repository.NewUserDAO()
@@ -31,6 +32,7 @@ func CommentAction(c *gin.Context) {
 	if req.ActionType == 1 { // 发布评论
 		commentId, err := commentDao.CreateComment(req.UserId, req.VideoId, &req.CommentText)
 		if err != nil {
+			fmt.Println("create comment error")
 			c.JSON(http.StatusBadRequest, CommentActionResponse{
 				Response: Response{
 					StatusCode: 1,
@@ -42,6 +44,7 @@ func CommentAction(c *gin.Context) {
 		}
 		var author User
 		if err := userDao.FindUserById(req.UserId, (*repository.User)(&author)); err != nil { // 找作者信息
+			fmt.Println("comment author not exists")
 			c.JSON(http.StatusBadRequest, CommentActionResponse{
 				Response: Response{
 					StatusCode: 1,
@@ -51,6 +54,7 @@ func CommentAction(c *gin.Context) {
 			})
 			return
 		}
+		fmt.Println("comment action ok")
 		c.JSON(http.StatusOK, CommentActionResponse{
 			Response: Response{
 				StatusCode: 0,
@@ -66,6 +70,7 @@ func CommentAction(c *gin.Context) {
 	} else if req.ActionType == 2 { // 删除评论
 		err := commentDao.DeleteCommentById(req.CommentId)
 		if err != nil {
+			fmt.Println("delete comment error")
 			c.JSON(http.StatusBadRequest, CommentActionResponse{
 				Response: Response{
 					StatusCode: 1,
@@ -75,6 +80,7 @@ func CommentAction(c *gin.Context) {
 			})
 			return
 		}
+		fmt.Println("comment delete ok")
 		c.JSON(http.StatusOK, CommentActionResponse{
 			Response: Response{
 				StatusCode: 0,
@@ -124,6 +130,11 @@ func CommentList(c *gin.Context) {
 		return
 	}
 
+	fmt.Println("comment list length : ", len(commentList))
+	//for _, comment := range commentList {
+	//	fmt.Printf("%+v\n", comment)
+	//}
+
 	// 构造结果
 	var author User
 	resList := make([]Comment, len(commentList))
@@ -146,10 +157,14 @@ func CommentList(c *gin.Context) {
 		}
 	}
 
+	for _, comment := range resList {
+		fmt.Printf("%+v\n", comment)
+	}
+
 	// 返回结果
 	c.JSON(http.StatusOK, CommentListResponse{
 		Response: Response{
-			StatusCode: 1,
+			StatusCode: 0,
 			StatusMsg:  "ok",
 		},
 		CommentList: &resList,
