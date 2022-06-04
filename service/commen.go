@@ -117,23 +117,28 @@ type CommentListResponse struct {
 	CommentList *[]Comment
 }
 
-type UserFavoriteRequest struct {
-	UserId     uint   `json:"user_id"`
-	Token      string `json:"token"`
-	VideoId    uint   `json:"video_id"`
-	ActionType int32  `json:"action_type"`
-}
 
-type UserFavoriteResponse struct {
+type FollowActionRequest struct {
+	UserId     uint   `json:"user_id" form:"user_id" `
+	Token      string `json:"token" form:"token"`
+	ToUserId   uint   `json:"to_user_id" form:"to_user_id"`
+	ActionType uint   `json:"action_type"`
+}
+type UserFollowListRequest struct {
+	UserId uint   `json:"user_id" form:"user_id" `
+	Token  string `json:"token" form:"token"`
+}
+type UserFollowListResponse struct {
 	Response
+	userList []repository.User `json:"user_list"`
 }
 
-type UserFavoriteListRequest struct {
-	UserId uint   `json:"user_id"`
-	Token  string `json:"token"`
+type UserFollowerListRequest struct {
+	UserId uint   `json:"user_id" form:"user_id" `
+	Token  string `json:"token" form:"token"`
 }
 
-type UserFavoriteListResponse struct {
+type UserFollowerListResponse struct {
 	Response
-	VideoList []repository.Video `json:"video_list"`
+	userList []repository.User `json:"user_list"`
 }
