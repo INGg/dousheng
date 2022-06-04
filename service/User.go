@@ -120,7 +120,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	token, err := middleware.GenToken(user.Name)
+	token, err := middleware.GenToken(user.Name, user.ID)
 	if err != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{
@@ -164,7 +164,7 @@ func UserInfo(c *gin.Context) {
 	userDAO := repository.NewUserDAO()
 
 	var user User
-	if err := userDAO.FindUserById(req.UserId, &user.User); err == nil {
+	if err := userDAO.FindUserById(req.UserId, (*repository.User)(&user)); err == nil {
 		c.JSON(http.StatusOK, UserInfoResponse{
 			Response: Response{
 				StatusCode: 0,
@@ -182,3 +182,9 @@ func UserInfo(c *gin.Context) {
 		})
 	}
 }
+
+//// GetUser 通过uid找到用户，并获取已登陆用户是否已经关注他了
+//func GetUser(u *User, targetID uint, loginUsername *string) {
+//	userDao := repository.NewUserDAO()
+//	userDao.FindUserById(targetID, u.User)
+//}

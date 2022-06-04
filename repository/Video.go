@@ -4,14 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"gorm.io/gorm"
-	"log"
 	"sync"
 	"time"
 )
 
 type Video struct {
 	ID            uint   `gorm:"primaryKey; not null" json:"id"`
-	PublishTime   int64  `gorm:"index" json:"publish_time"`
+	PublishTime   int64  `gorm:"index; timestamp" json:"publish_time"`
 	Author        User   `gorm:"foreignKey:AuthorID" json:"author"`
 	AuthorID      uint   //`json:"author_id"`
 	PlayUrl       string `gorm:"type:varchar(128)" json:"play_url"`  // 播放地址
@@ -19,8 +18,6 @@ type Video struct {
 	FavoriteCount int64  `gorm:"not_null; default:0" json:"favorite_count"`
 	CommentCount  int64  `gorm:"not_null; default:0" json:"comment_count"`
 	Title         string ` json:"title"`
-
-	Comment []Comment
 }
 
 var VideoCount int64
@@ -61,7 +58,7 @@ func (v *VideoDAO) FindVideoByPathAndUid(path string, uid int64, video *Video) e
 }
 
 // InsertVideo 将视频信息写入数据库，返回错误信息和错误
-func (v *VideoDAO) InsertVideo(username string, filepath string, title string) error {
+func (v *VideoDAO) InsertVideo(uid uint, filepath string, title string) error {
 
 	// TODO 判断是否已经存在了这个视频
 
@@ -72,23 +69,20 @@ func (v *VideoDAO) InsertVideo(username string, filepath string, title string) e
 	// 封面url
 	coverUrl := "https://cdn.pixabay.com/photo/2016/03/27/18/10/bear-1283347_1280.jpg"
 	// 构造video
-
-	// 根据token获取视频上传者
 	var author User
-	userD := NewUserDAO() // 创建DAO
-	err := userD.FindUserIDByName(username, &author)
-	if err != nil {
-		log.Println("user not exists")
+	userDAO := NewUserDAO()
+	if err := userDAO.FindUserById(uid, &author); err != nil { // 找到作者
 		return err
 	}
 
-	fmt.Println(username, filepath, title)
+	// 根据token获取视频上传者
+	fmt.Println(uid, filepath, title)
 
 	// 存入数据库
 	res := db.Create(&Video{
 		PublishTime:   time.Now().Unix(),
 		Author:        author,
-		AuthorID:      author.ID,
+		AuthorID:      uid,
 		PlayUrl:       playUrl,
 		CoverUrl:      coverUrl,
 		FavoriteCount: 0,
@@ -96,7 +90,7 @@ func (v *VideoDAO) InsertVideo(username string, filepath string, title string) e
 		Title:         title,
 	})
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-		log.Fatal("create video error")
+		fmt.Println("create video error")
 		return res.Error
 	}
 
@@ -110,15 +104,28 @@ func (v *VideoDAO) CheckIsFavorite(uid uint, videoId uint) bool {
 	return false
 }
 
+func (v *VideoDAO) VideoCount() int64 {
+	var count int64
+	db.Model(&Video{}).Count(&count)
+	return count
+}
+
 // FindAllVideoByUid 通过uid找到这个人发布的所有视频
 func (v *VideoDAO) FindAllVideoByUid(uid uint, VideoList *[]Video) error {
-	//var list []Video
 	res := db.Model(&Video{}).Where("author_id = ?", uid).Find(VideoList)
-	//fmt.Println(len(*VideoList))
-	//for i, video := range *VideoList {
-	//	fmt.Println(i, video)
-	//}
 	if res.Error != nil {
+		return res.Error
+	}
+	for _, video := range *VideoList {
+		fmt.Printf("%+v\n", video)
+	}
+	return nil
+}
+
+// FindVideoById 通过id找到Video
+func (v *VideoDAO) FindVideoById(uid uint, video *Video) error {
+	if res := db.Model(User{}).Where("author_id = ?", uid).First(video); errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		fmt.Println("find user error")
 		return res.Error
 	}
 	return nil

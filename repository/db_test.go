@@ -24,7 +24,8 @@ func TestFindAllVideoByUid(t *testing.T) {
 	InitDb()
 	id := 1
 	var video []Video
-	err := FindAllVideoByUid(uint(id), &video)
+	videoDAO := NewVideoDAO()
+	err := videoDAO.FindAllVideoByUid(uint(id), &video)
 	if err != nil {
 		return
 	}
@@ -33,4 +34,24 @@ func TestFindAllVideoByUid(t *testing.T) {
 	for i, v := range video {
 		fmt.Println(i, v)
 	}
+}
+
+func TestGetList(t *testing.T) {
+	InitDb()
+	var res []Video
+	db.Find(&res)
+	for _, re := range res {
+		fmt.Printf("%+v", re)
+	}
+}
+
+func TestGetByList(t *testing.T) {
+	InitDb()
+	var idList = []uint{1, 2, 3}
+	var res []Video
+	db.Model(&Video{}).Where("id = ?", idList).First(&res)
+	for _, re := range res {
+		fmt.Printf("%+v", re)
+	}
+
 }
