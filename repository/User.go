@@ -63,6 +63,9 @@ func (u *UserDAO) FindUserById(id uint, user *User) error {
 	}
 	return nil
 }
+func (u *UserDAO) FindMUserByIdList(idList []uint, userList *[]User) error {
+	return nil
+}
 
 // CreateUser 向数据库写入User
 func (u *UserDAO) CreateUser(username string, pwd string) (uid uint, token string, err error) {

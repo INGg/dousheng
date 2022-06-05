@@ -25,11 +25,9 @@ func RelationAction(c *gin.Context) {
 		if req.Token != "" {
 			_, err := middleware.ParseToken(req.Token)
 			if err != nil {
-				c.JSON(http.StatusOK, FeedResponse{
+				c.JSON(http.StatusOK, Response{
 					StatusCode: 1,
 					StatusMsg:  "token error",
-					VideoList:  nil,
-					NextTime:   0,
 				})
 				return
 			}
@@ -68,10 +66,12 @@ func FollowList(c *gin.Context) {
 			_, err := middleware.ParseToken(req.Token)
 			if err != nil {
 				c.JSON(http.StatusOK, FeedResponse{
-					StatusCode: 1,
-					StatusMsg:  "token error",
-					VideoList:  nil,
-					NextTime:   0,
+					Response: Response{
+						StatusCode: 0,
+						StatusMsg:  "",
+					},
+					VideoList: nil,
+					NextTime:  0,
 				})
 				return
 			}
@@ -126,11 +126,12 @@ func FollowerList(c *gin.Context) {
 		if req.Token != "" {
 			_, err := middleware.ParseToken(req.Token)
 			if err != nil {
-				c.JSON(http.StatusOK, FeedResponse{
-					StatusCode: 1,
-					StatusMsg:  "token error",
-					VideoList:  nil,
-					NextTime:   0,
+				c.JSON(http.StatusOK, UserFollowListResponse{
+					Response: Response{
+						StatusCode: 1,
+						StatusMsg:  "Token is err",
+					},
+					userList: nil,
 				})
 				return
 			}
