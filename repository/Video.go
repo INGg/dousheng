@@ -98,12 +98,6 @@ func (v *VideoDAO) InsertVideo(uid uint, filepath string, title string) error {
 	return nil
 }
 
-// CheckIsFavorite 判断uid这个人是不是给这个视频点赞了
-func (v *VideoDAO) CheckIsFavorite(uid uint, videoId uint) bool {
-	// TODO 这个是不是应该写在Favorite里面
-	return false
-}
-
 func (v *VideoDAO) VideoCount() int64 {
 	var count int64
 	db.Model(&Video{}).Count(&count)
