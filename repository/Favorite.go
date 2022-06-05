@@ -13,6 +13,7 @@ type Favorite struct {
 	ID      uint `gorm:"primaryKey; not null; auto_increment" json:"id"`
 	UserID  uint `gorm:"not null" json:"user_id"`
 	VideoID uint `gorm:"not null" json:"video_id"`
+	Video   Video `gorm:"foreignKey:VideoID"`
 	Deleted gorm.DeletedAt
 }
 
@@ -64,9 +65,11 @@ func (f *FavoriteDAO) FindFavoriteVideoByUid(uid uint, videoList *[]Video) error
 		return res.Error
 	}
 	videoDAO := NewVideoDAO()
+	userDAO := NewUserDAO()
 	for i := range vids {
 		var video Video
 		videoDAO.FindVideoById(vids[i], &video)
+		userDAO.FindUserById(video.AuthorID, &video.Author)
 		*videoList = append(*videoList, video)
 	}
 	return nil
@@ -88,4 +91,12 @@ func (f *FavoriteDAO) ReduceFavoriteCount(vid uint) error {
 		return res.Error
 	}
 	return nil
+}
+
+func (v *VideoDAO) CheckIsFavorite(uid uint, vid uint) bool {
+	res := db.Where(&Favorite{UserID: uid, VideoID: vid}).First(&uid)
+	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		return false
+	}
+	return true
 }
