@@ -63,7 +63,13 @@ func (u *UserDAO) FindUserById(id uint, user *User) error {
 	}
 	return nil
 }
+
+// FindMUserByIdList 通过id数组找到user数组
 func (u *UserDAO) FindMUserByIdList(idList []uint, userList *[]User) error {
+	if res := db.Model(User{}).Where("id IN ?", idList).Find(userList); errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		fmt.Println("find user error")
+		return res.Error
+	}
 	return nil
 }
 
