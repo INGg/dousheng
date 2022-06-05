@@ -141,3 +141,24 @@ type UserFollowerListResponse struct {
 	Response
 	userList []repository.User `json:"user_list"`
 }
+
+type UserFavoriteRequest struct {
+	UserId     uint   `json:"user_id" form:"user_id"`
+	Token      string `json:"token" form:"token"`
+	VideoId    uint   `json:"video_id" form:"video_id"`
+	ActionType int32  `json:"action_type" form:"action_type"`
+}
+
+type UserFavoriteResponse struct {
+	Response
+}
+
+type UserFavoriteListRequest struct {
+	UserId uint   `json:"user_id" form:"user_id"`
+	Token  string `json:"token" form:"token"`
+}
+
+type UserFavoriteListResponse struct {
+	Response
+	VideoList []repository.Video `json:"video_list"`
+}
