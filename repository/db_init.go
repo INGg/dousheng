@@ -14,6 +14,7 @@ func InitDb() *gorm.DB {
 	db.AutoMigrate(&Video{})
 	db.AutoMigrate(&Favorite{})
 	db.AutoMigrate(&Comment{})
+	db.AutoMigrate(&Relation{})
 
 	// 初始化总的数量
 	db.Model(&User{}).Count(&UserCount)
@@ -24,7 +25,8 @@ func InitDb() *gorm.DB {
 
 func connectDB() *gorm.DB {
 	var err error
-	dsn := DB_USERNAME + ":" + DB_PASSWORD + "@tcp" + "(" + DB_HOST + ":" + DB_PORT + ")/" + DB_NAME + "?" + "parseTime=true&loc=Local"
+
+	dsn := "root" + ":" + "123" + "@tcp" + "(" + "127.0.0.1" + ":" + "3306" + ")/" + "Dou" + "?" + "parseTime=true&loc=Local"
 
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 
