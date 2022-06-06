@@ -3,8 +3,6 @@ package service
 import (
 	"demo1/repository"
 	"net/http"
-	"strconv"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -13,7 +11,7 @@ import (
 func FavoriteAction(c *gin.Context) {
 	var req UserFavoriteRequest
 	var user repository.User
-	var video repository.Video
+	var video *repository.Video
 
 	if err := c.ShouldBind(&req); err != nil {
 		c.JSON(http.StatusOK, UserFavoriteResponse{
@@ -22,25 +20,26 @@ func FavoriteAction(c *gin.Context) {
 				StatusMsg:  "FavoriteAction should bind error",
 			},
 		})
+		return
 	}
 
 	// 从token中提取相关信息
 	user.Name = c.GetString("username")
-	uid, _ := strconv.Atoi(c.GetString("user_id"))
-	user.ID = uint(uid)
+	user.ID = c.GetUint("user_id")
 
 	// 创建单例
 	favoriteDAO := repository.NewFavoriteDAO()
 	userDAO := repository.NewUserDAO()
 	videoDAO := repository.NewVideoDAO()
 
-	if err := userDAO.FindUserById(user.ID, &user); err != nil {
+	if err := userDAO.FindUserById(user.ID, (*repository.User)(&user)); err != nil {
 		c.JSON(http.StatusOK, UserFavoriteResponse{
 			Response: Response{
 				StatusCode: 1,
 				StatusMsg:  "User can't find error",
 			},
 		})
+		return
 	}
 
 	if err := videoDAO.FindVideoById(req.VideoId, &video); err != nil {
@@ -55,7 +54,7 @@ func FavoriteAction(c *gin.Context) {
 	if req.ActionType == 1 {
 		//点赞操作
 		//将该视频加入用户的点赞列表
-		if err := favoriteDAO.Favorite(req.UserId, req.VideoId); err != nil {
+		if err := favoriteDAO.Favorite(user.ID, req.VideoId); err != nil {
 			c.JSON(http.StatusOK, UserFavoriteResponse{
 				Response: Response{
 					StatusCode: 1,
@@ -78,7 +77,7 @@ func FavoriteAction(c *gin.Context) {
 				StatusMsg:  "Favorite successful",
 			},
 		})
-	} else {
+	} else if req.ActionType == 2 {
 		//取消点赞
 		//将该视频从用户的点赞列表移除
 		if err := favoriteDAO.UnFavorite(req.UserId, req.VideoId); err != nil {
@@ -102,6 +101,13 @@ func FavoriteAction(c *gin.Context) {
 			Response: Response{
 				StatusCode: 0,
 				StatusMsg:  "UnFavorite successful",
+			},
+		})
+	} else {
+		c.JSON(http.StatusOK, UserFavoriteResponse{
+			Response: Response{
+				StatusCode: 1,
+				StatusMsg:  "Favorite action error",
 			},
 		})
 	}
@@ -130,10 +136,11 @@ func FavoriteList(c *gin.Context) {
 		c.JSON(http.StatusOK, UserFavoriteListResponse{
 			Response: Response{
 				StatusCode: 1,
-				StatusMsg:  "Can't find favorite video by uid",
+				StatusMsg:  "Can't find favorite video list by uid",
 			},
 			VideoList: nil,
 		})
+		return
 	} else {
 		c.JSON(http.StatusOK, UserFavoriteListResponse{
 			Response: Response{

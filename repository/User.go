@@ -15,8 +15,8 @@ var UserCount int64
 type User struct {
 	ID            uint   `gorm:"primaryKey; not null" json:"id"`
 	Name          string `gorm:"type:varchar(64); not null;" json:"name"`
-	Token         string `gorm:"-" json:"token"`
-	Password      string `gorm:"char(24) ; not null;"`
+	Token         string `gorm:"-" json:"token,omitempty"`
+	Password      string `gorm:"char(24) ; not null;" json:"password,omitempty"`
 	FollowCount   int64  `gorm:"not null; default:0" json:"follow_count"`   // 关注的人的数量
 	FollowerCount int64  `gorm:"not null; default:0" json:"follower_count"` // 粉丝总数
 	IsFollow      bool   `gorm:"-" json:"is_follow"`
@@ -64,7 +64,7 @@ func (u *UserDAO) FindUserIDByName(username string, user *User) error {
 
 // FindUserById 通过id找到user
 func (u *UserDAO) FindUserById(id uint, user *User) error {
-	if res := db.Model(User{}).Where("id = ?", id).First(user); errors.Is(res.Error, gorm.ErrRecordNotFound) {
+	if res := db.Model(User{}).Select("name", "id", "follow_count", "follower_count").Where("id = ?", id).First(user); errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		fmt.Println("find user error")
 		return res.Error
 	}

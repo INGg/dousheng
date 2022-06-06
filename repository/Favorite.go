@@ -13,6 +13,7 @@ type Favorite struct {
 	ID      uint `gorm:"primaryKey; not null; auto_increment" json:"id"`
 	UserID  uint `gorm:"not null" json:"user_id"`
 	VideoID uint `gorm:"not null" json:"video_id"`
+	Video   Video `gorm:"foreignKey:VideoID"`
 	Deleted gorm.DeletedAt
 }
 
@@ -38,7 +39,7 @@ func (f *FavoriteDAO) Favorite(uid uint, vid uint) error {
 		VideoID: vid,
 	})
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-		log.Print("create video error")
+		log.Print("create favorite error")
 		return res.Error
 	}
 	fmt.Println("insert favorite info ok")
@@ -49,7 +50,7 @@ func (f *FavoriteDAO) UnFavorite(uid uint, vid uint) error {
 	//删除点赞记录
 	res := db.Where(&Favorite{UserID: uid, VideoID: vid}).Delete(&Favorite{})
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-		log.Print("delete video error")
+		log.Print("delete favorite error")
 		return res.Error
 	}
 	return nil
@@ -57,23 +58,25 @@ func (f *FavoriteDAO) UnFavorite(uid uint, vid uint) error {
 
 func (f *FavoriteDAO) FindFavoriteVideoByUid(uid uint, videoList *[]Video) error {
 	var vids []uint
-	var video Video
 	//将扫描到的vid存到vids切片里
-	res := db.Select("vid").Where("user_id = ?", uid).Find(&vids)
+	res := db.Model(Favorite{}).Select("video_id").Where("user_id = ?", uid).Find(&vids)
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		log.Print("vid can't find error")
 		return res.Error
 	}
 	videoDAO := NewVideoDAO()
+	userDAO := NewUserDAO()
 	for i := range vids {
+		var video Video
 		videoDAO.FindVideoById(vids[i], &video)
+		userDAO.FindUserById(video.AuthorID, &video.Author)
 		*videoList = append(*videoList, video)
 	}
 	return nil
 }
 
 func (f *FavoriteDAO) AddFavoriteCount(vid uint) error {
-	res := db.Model(&Video{}).Where("id = ?", vid).Update("comment_count", gorm.Expr("comment_count + ?", 1))
+	res := db.Model(&Video{}).Where("id = ?", vid).Update("favorite_count", gorm.Expr("favorite_count + ?", 1))
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		log.Print("Add favorite count error")
 		return res.Error
@@ -82,10 +85,18 @@ func (f *FavoriteDAO) AddFavoriteCount(vid uint) error {
 }
 
 func (f *FavoriteDAO) ReduceFavoriteCount(vid uint) error {
-	res := db.Model(&Video{}).Where("id = ?", vid).Update("comment_count", gorm.Expr("comment_count - ?", 1))
+	res := db.Model(&Video{}).Where("id = ?", vid).Update("favorite_count", gorm.Expr("favorite_count - ?", 1))
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		log.Print("Reduce favorite count error")
 		return res.Error
 	}
 	return nil
+}
+
+func (v *VideoDAO) CheckIsFavorite(uid uint, vid uint) bool {
+	res := db.Where(&Favorite{UserID: uid, VideoID: vid}).First(&uid)
+	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		return false
+	}
+	return true
 }
