@@ -2,6 +2,7 @@ package service
 
 import (
 	"demo1/repository"
+	"fmt"
 	"github.com/gin-gonic/gin"
 )
 
@@ -36,7 +37,10 @@ func RelationAction(c *gin.Context) {
 			})
 			//	取消关注操作
 		} else if req.ActionType == 2 {
+			fmt.Println("UserId: ", req.UserId)
+			fmt.Println("ToUSerId: ", req.ToUserId)
 			if err := relationDao.DeleteRelation(req.UserId, req.ToUserId); err != nil {
+
 				c.JSON(200, Response{
 					StatusCode: 1,
 					StatusMsg:  "取消关注失败",
@@ -47,6 +51,11 @@ func RelationAction(c *gin.Context) {
 				StatusCode: 0,
 				StatusMsg:  "取消关注成功",
 			})
+		} else {
+			c.JSON(200, Response{
+				StatusCode: 1,
+				StatusMsg:  "ActionType解析失败",
+			})
 		}
 
 	}
@@ -55,7 +64,7 @@ func RelationAction(c *gin.Context) {
 // FollowList 获取关注列表
 func FollowList(c *gin.Context) {
 	var req UserFollowerListRequest
-	var AuthorList []repository.User
+	var AuthorList []repository.UserRes
 	UserD := repository.NewUserDAO()
 	// 无法将参数赋值到req中
 	if err := c.ShouldBind(&req); err != nil {
@@ -64,7 +73,7 @@ func FollowList(c *gin.Context) {
 				StatusCode: 1,
 				StatusMsg:  "无法获取关注列表",
 			},
-			userList: nil,
+			UserList: nil,
 		})
 		//	成功赋值给req,开始获取关注列表
 	} else {
@@ -80,23 +89,28 @@ func FollowList(c *gin.Context) {
 					StatusCode: 1,
 					StatusMsg:  "你还没有关注呢",
 				},
-				userList: nil,
+				UserList: nil,
 			})
 		} else {
 			var AuthorIdList = make([]uint, len(AuthorList))
 			// 获取author中的 authorId
-			for _, author := range AuthorListR {
+			for i, author := range AuthorListR {
 				AuthorIdList = append(AuthorIdList, author.AuthorId)
+				fmt.Println("AuthorId: ", author.AuthorId)
+				fmt.Println("AuThorIDList:", AuthorIdList[i])
 			}
+
 			err := UserD.FindMUserByIdList(AuthorIdList, &AuthorList)
+			//fmt.Println("AuthorList:", AuthorList[0])
 			// 无法从数据库中找到对应id列表
+
 			if err != nil {
 				c.JSON(200, UserFollowListResponse{
 					Response: Response{
 						StatusCode: 1,
 						StatusMsg:  "用户查询出错",
 					},
-					userList: nil,
+					UserList: nil,
 				})
 			} else {
 				c.JSON(200, UserFollowListResponse{
@@ -104,7 +118,7 @@ func FollowList(c *gin.Context) {
 						StatusCode: 0,
 						StatusMsg:  "Success",
 					},
-					userList: AuthorList,
+					UserList: &AuthorList,
 				})
 			}
 		}
@@ -114,7 +128,7 @@ func FollowList(c *gin.Context) {
 // FollowerList 获取粉丝列表
 func FollowerList(c *gin.Context) {
 	var req UserFollowerListRequest
-	var FollowerList []repository.User
+	var FollowerList []repository.UserRes
 	// 参数错误.无法赋值到req中
 	if err := c.ShouldBind(&req); err != nil {
 		c.JSON(200, UserFollowerListResponse{
@@ -122,7 +136,7 @@ func FollowerList(c *gin.Context) {
 				StatusCode: 1,
 				StatusMsg:  "参数错误",
 			},
-			userList: nil,
+			UserList: nil,
 		})
 		//	已经成功将参数赋值到req中
 	} else {
@@ -138,7 +152,7 @@ func FollowerList(c *gin.Context) {
 					StatusCode: 0,
 					StatusMsg:  "你还没有粉丝呢",
 				},
-				userList: nil,
+				UserList: nil,
 			})
 
 		} else {
@@ -152,7 +166,7 @@ func FollowerList(c *gin.Context) {
 						StatusCode: 1,
 						StatusMsg:  "用户查询出错",
 					},
-					userList: nil,
+					UserList: nil,
 				})
 			} else {
 				c.JSON(200, UserFollowerListResponse{
@@ -160,7 +174,7 @@ func FollowerList(c *gin.Context) {
 						StatusCode: 0,
 						StatusMsg:  "success",
 					},
-					userList: FollowerList,
+					UserList: &FollowerList,
 				})
 			}
 
