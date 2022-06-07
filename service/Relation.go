@@ -93,7 +93,7 @@ func RelationAction(c *gin.Context) {
 // FollowList 获取关注列表
 func FollowList(c *gin.Context) {
 	var req UserFollowerListRequest
-	var AuthorList []repository.UserRes
+	var AuthorList []repository.User
 	UserD := repository.NewUserDAO()
 	// 无法将参数赋值到req中
 	if err := c.ShouldBind(&req); err != nil {
@@ -160,7 +160,7 @@ func FollowList(c *gin.Context) {
 // FollowerList 获取粉丝列表
 func FollowerList(c *gin.Context) {
 	var req UserFollowerListRequest
-	var FollowerList []repository.UserRes
+	var FollowerList []repository.User
 	// 参数错误.无法赋值到req中
 	if err := c.ShouldBind(&req); err != nil {
 		c.JSON(200, UserFollowerListResponse{

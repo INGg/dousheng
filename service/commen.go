@@ -117,28 +117,6 @@ type CommentListResponse struct {
 	CommentList *[]Comment `json:"comment_list"`
 }
 
-
-type UserFavoriteRequest struct {
-	UserId     uint   `json:"user_id"`
-	Token      string `json:"token"`
-	VideoId    uint   `json:"video_id"`
-	ActionType int32  `json:"action_type"`
-}
-
-type UserFavoriteResponse struct {
-	Response
-}
-
-type UserFavoriteListRequest struct {
-	UserId uint   `json:"user_id"`
-	Token  string `json:"token"`
-}
-
-type UserFavoriteListResponse struct {
-	Response
-	VideoList []repository.Video `json:"video_list"`
-}
-
 type FollowActionRequest struct {
 	UserId     uint   `json:"user_id" form:"user_id" `
 	Token      string `json:"token" form:"token"`
@@ -151,7 +129,7 @@ type UserFollowListRequest struct {
 }
 type UserFollowListResponse struct {
 	Response
-	UserList *[]repository.UserRes `json:"user_list"`
+	UserList *[]repository.User `json:"user_list"`
 }
 
 type UserFollowerListRequest struct {
@@ -161,7 +139,7 @@ type UserFollowerListRequest struct {
 
 type UserFollowerListResponse struct {
 	Response
-	UserList *[]repository.UserRes `json:"user_list"`
+	UserList *[]repository.User `json:"user_list"`
 }
 
 type UserFavoriteRequest struct {

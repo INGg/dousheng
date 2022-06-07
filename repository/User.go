@@ -2,6 +2,7 @@ package repository
 
 import (
 	"demo1/middleware"
+	"demo1/util"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -19,13 +20,6 @@ type User struct {
 	Password      string `gorm:"char(24) ; not null;" json:"password,omitempty"`
 	FollowCount   int64  `gorm:"not null; default:0" json:"follow_count"`   // 关注的人的数量
 	FollowerCount int64  `gorm:"not null; default:0" json:"follower_count"` // 粉丝总数
-	IsFollow      bool   `gorm:"-" json:"is_follow"`
-}
-type UserRes struct {
-	ID            uint   `json:"id"`
-	Name          string `json:"name"`
-	FollowCount   int64  `json:"follow_count"`
-	FollowerCount int64  `json:"follower_count"`
 	IsFollow      bool   `gorm:"-" json:"is_follow"`
 }
 
@@ -72,8 +66,8 @@ func (u *UserDAO) FindUserById(id uint, user *User) error {
 }
 
 // FindMUserByIdList 通过id数组找到user数组
-func (u *UserDAO) FindMUserByIdList(idList []uint, userList *[]UserRes) error {
-	if res := db.Model(User{}).Where("id IN ?", idList).Find(userList); errors.Is(res.Error, gorm.ErrRecordNotFound) {
+func (u *UserDAO) FindMUserByIdList(idList []uint, userList *[]User) error {
+	if res := db.Model(User{}).Select("name", "id", "follow_count", "follower_count").Where("id IN ?", idList).Find(userList); errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		fmt.Println("find user error")
 		return res.Error
 	}
@@ -84,7 +78,7 @@ func (u *UserDAO) FindMUserByIdList(idList []uint, userList *[]UserRes) error {
 func (u *UserDAO) CreateUser(username string, pwd string) (uid uint, token string, err error) {
 	user := User{
 		Name:          username,
-		Password:      base64.StdEncoding.EncodeToString([]byte(pwd)),
+		Password:      util.MakeMD5(pwd),
 		FollowCount:   0,
 		FollowerCount: 0,
 	}
