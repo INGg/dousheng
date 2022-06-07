@@ -1,6 +1,7 @@
 package service
 
 import (
+	"demo1/model"
 	"demo1/repository"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -8,9 +9,9 @@ import (
 
 // RelationAction 关注操作
 func RelationAction(c *gin.Context) {
-	var req FollowActionRequest
+	var req model.FollowActionRequest
 	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(200, Response{
+		c.JSON(200, model.Response{
 			StatusCode: 1,
 			StatusMsg:  "参数解析失败",
 		})
@@ -26,14 +27,14 @@ func RelationAction(c *gin.Context) {
 	// 判断 关注还是取消关注
 	if req.ActionType == 1 {
 		if err := relationDAO.AddRelation(req.UserId, req.ToUserId); err != nil {
-			c.JSON(200, Response{
+			c.JSON(200, model.Response{
 				StatusCode: 1,
 				StatusMsg:  "关注失败",
 			})
 			return
 		}
 		if err := userDAO.UpdateUserFollowerCount(req.UserId); err != nil {
-			c.JSON(200, Response{
+			c.JSON(200, model.Response{
 				StatusCode: 1,
 				StatusMsg:  "关注失败",
 			})
@@ -41,48 +42,48 @@ func RelationAction(c *gin.Context) {
 		}
 
 		if err := userDAO.UpdateUserFollowerCount(req.ToUserId); err != nil {
-			c.JSON(200, Response{
+			c.JSON(200, model.Response{
 				StatusCode: 1,
 				StatusMsg:  "关注失败",
 			})
 			return
 		}
 
-		c.JSON(200, Response{
+		c.JSON(200, model.Response{
 			StatusCode: 0,
 			StatusMsg:  "关注成功",
 		})
 		//	取消关注操作
 	} else if req.ActionType == 2 {
-		fmt.Println("UserId: ", req.UserId)
+		fmt.Println("UserID: ", req.UserId)
 		fmt.Println("ToUSerId: ", req.ToUserId)
 		if err := relationDAO.DeleteRelation(req.UserId, req.ToUserId); err != nil {
-			c.JSON(200, Response{
+			c.JSON(200, model.Response{
 				StatusCode: 1,
 				StatusMsg:  "取消关注失败",
 			})
 			return
 		}
 		if err := userDAO.ReduceFollowerCount(req.UserId); err != nil {
-			c.JSON(200, Response{
+			c.JSON(200, model.Response{
 				StatusCode: 1,
 				StatusMsg:  "取消关注失败",
 			})
 			return
 		}
 		if err := userDAO.ReduceFollowerCount(req.ToUserId); err != nil {
-			c.JSON(200, Response{
+			c.JSON(200, model.Response{
 				StatusCode: 1,
 				StatusMsg:  "取消关注失败",
 			})
 			return
 		}
-		c.JSON(200, Response{
+		c.JSON(200, model.Response{
 			StatusCode: 0,
 			StatusMsg:  "取消关注成功",
 		})
 	} else {
-		c.JSON(200, Response{
+		c.JSON(200, model.Response{
 			StatusCode: 1,
 			StatusMsg:  "ActionType解析失败",
 		})
@@ -92,13 +93,13 @@ func RelationAction(c *gin.Context) {
 
 // FollowList 获取关注列表
 func FollowList(c *gin.Context) {
-	var req UserFollowerListRequest
+	var req model.UserFollowerListRequest
 	var AuthorList []repository.User
 	UserD := repository.NewUserDAO()
 	// 无法将参数赋值到req中
 	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(200, UserFollowListResponse{
-			Response: Response{
+		c.JSON(200, model.UserFollowListResponse{
+			Response: model.Response{
 				StatusCode: 1,
 				StatusMsg:  "无法获取关注列表",
 			},
@@ -116,8 +117,8 @@ func FollowList(c *gin.Context) {
 		relationDAO.QueryAuthorIdByFollowId(req.UserId, &AuthorListR)
 
 		if AuthorListR == nil {
-			c.JSON(200, UserFollowListResponse{
-				Response: Response{
+			c.JSON(200, model.UserFollowListResponse{
+				Response: model.Response{
 					StatusCode: 1,
 					StatusMsg:  "你还没有关注呢",
 				},
@@ -137,16 +138,16 @@ func FollowList(c *gin.Context) {
 			// 无法从数据库中找到对应id列表
 
 			if err != nil {
-				c.JSON(200, UserFollowListResponse{
-					Response: Response{
+				c.JSON(200, model.UserFollowListResponse{
+					Response: model.Response{
 						StatusCode: 1,
 						StatusMsg:  "用户查询出错",
 					},
 					UserList: nil,
 				})
 			} else {
-				c.JSON(200, UserFollowListResponse{
-					Response: Response{
+				c.JSON(200, model.UserFollowListResponse{
+					Response: model.Response{
 						StatusCode: 0,
 						StatusMsg:  "Success",
 					},
@@ -159,12 +160,12 @@ func FollowList(c *gin.Context) {
 
 // FollowerList 获取粉丝列表
 func FollowerList(c *gin.Context) {
-	var req UserFollowerListRequest
+	var req model.UserFollowerListRequest
 	var FollowerList []repository.User
 	// 参数错误.无法赋值到req中
 	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(200, UserFollowerListResponse{
-			Response: Response{
+		c.JSON(200, model.UserFollowerListResponse{
+			Response: model.Response{
 				StatusCode: 1,
 				StatusMsg:  "参数错误",
 			},
@@ -177,14 +178,14 @@ func FollowerList(c *gin.Context) {
 		userDAO := repository.NewUserDAO()
 
 		// jwt 已经将 token中的user_id写入 gin.context中
-		//req.UserId = c.GetUint("user_id")
+		//req.UserID = c.GetUint("user_id")
 		var RelationList []repository.Relation
 
 		relationDAO.QueryFollowIdByAuthorId(req.UserId, &RelationList)
 
 		if RelationList == nil {
-			c.JSON(200, UserFollowerListResponse{
-				Response: Response{
+			c.JSON(200, model.UserFollowerListResponse{
+				Response: model.Response{
 					StatusCode: 0,
 					StatusMsg:  "你还没有粉丝呢",
 				},
@@ -197,16 +198,16 @@ func FollowerList(c *gin.Context) {
 				FollowerId = append(FollowerId, relation.FollowerId)
 			}
 			if err := userDAO.FindMUserByIdList(FollowerId, &FollowerList); err != nil {
-				c.JSON(200, UserFollowListResponse{
-					Response: Response{
+				c.JSON(200, model.UserFollowListResponse{
+					Response: model.Response{
 						StatusCode: 1,
 						StatusMsg:  "用户查询出错",
 					},
 					UserList: nil,
 				})
 			} else {
-				c.JSON(200, UserFollowerListResponse{
-					Response: Response{
+				c.JSON(200, model.UserFollowerListResponse{
+					Response: model.Response{
 						StatusCode: 0,
 						StatusMsg:  "success",
 					},

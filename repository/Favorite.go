@@ -1,21 +1,17 @@
 package repository
 
 import (
+	"demo1/model/entity"
 	"errors"
 	"fmt"
+	"go.uber.org/zap"
 	"log"
 	"sync"
 
 	"gorm.io/gorm"
 )
 
-type Favorite struct {
-	ID      uint `gorm:"primaryKey; not null; auto_increment" json:"id"`
-	UserID  uint `gorm:"not null" json:"user_id"`
-	VideoID uint `gorm:"not null" json:"video_id"`
-	Video   Video `gorm:"foreignKey:VideoID"`
-	Deleted gorm.DeletedAt
-}
+type Favorite entity.Favorite
 
 type FavoriteDAO struct {
 }
@@ -43,7 +39,7 @@ func (f *FavoriteDAO) Favorite(uid uint, vid uint) error {
 		return res.Error
 	}
 	fmt.Println("insert favorite info ok")
-	return nil 
+	return nil
 }
 
 func (f *FavoriteDAO) UnFavorite(uid uint, vid uint) error {
@@ -57,20 +53,10 @@ func (f *FavoriteDAO) UnFavorite(uid uint, vid uint) error {
 }
 
 func (f *FavoriteDAO) FindFavoriteVideoByUid(uid uint, videoList *[]Video) error {
-	var vids []uint
-	//将扫描到的vid存到vids切片里
-	res := db.Model(Favorite{}).Select("video_id").Where("user_id = ?", uid).Find(&vids)
+	res := db.Model(Favorite{}).Select("video_id").Where("user_id = ?", uid).Find(&videoList)
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-		log.Print("vid can't find error")
+		zap.L().Error("vid can't find error")
 		return res.Error
-	}
-	videoDAO := NewVideoDAO()
-	userDAO := NewUserDAO()
-	for i := range vids {
-		var video Video
-		videoDAO.FindVideoById(vids[i], &video)
-		userDAO.FindUserById(video.AuthorID, &video.Author)
-		*videoList = append(*videoList, video)
 	}
 	return nil
 }
@@ -93,7 +79,7 @@ func (f *FavoriteDAO) ReduceFavoriteCount(vid uint) error {
 	return nil
 }
 
-func (v *VideoDAO) CheckIsFavorite(uid uint, vid uint) bool {
+func (f *FavoriteDAO) CheckIsFavorite(uid uint, vid uint) bool {
 	res := db.Where(&Favorite{UserID: uid, VideoID: vid}).First(&uid)
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return false

@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"demo1/config"
 	"fmt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -17,16 +18,15 @@ func InitDb() *gorm.DB {
 	db.AutoMigrate(&Relation{})
 
 	// 初始化总的数量
-	db.Model(&User{}).Count(&UserCount)
-	db.Model(&Video{}).Count(&VideoCount)
+	//db.Model(&User{}).Count(&UserCount)
+	//db.Model(&Video{}).Count(&VideoCount)
 
 	return db
 }
 
 func connectDB() *gorm.DB {
 	var err error
-
-	dsn := "root" + ":" + "123" + "@tcp" + "(" + "127.0.0.1" + ":" + "3306" + ")/" + "Dou" + "?" + "parseTime=true&loc=Local"
+	dsn := config.DBConnectString()
 
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 

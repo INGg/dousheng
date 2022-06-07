@@ -1,12 +1,9 @@
 package service
 
 import (
-	"demo1/middleware"
+	"demo1/model"
 	"demo1/repository"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"net/http"
-	"time"
 )
 
 // ---Feed---
@@ -16,72 +13,39 @@ import (
 //	Author repository.User
 //}
 
-func Feed(c *gin.Context) {
-	// 把请求数据拿出来
-	var req FeedRequest
-
-	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, FeedResponse{
-			Response: Response{
-				StatusCode: 1,
-				StatusMsg:  "feed should bind error",
-			},
-			VideoList: nil,
-			NextTime:  0,
-		})
-	}
-
-	if req.LatestTime == 0 {
-		req.LatestTime = time.Now().Unix()
-	}
-
-	// 解析token
-	if req.Token != "" {
-		_, err := middleware.ParseToken(req.Token)
-		if err != nil {
-			c.JSON(http.StatusOK, FeedResponse{
-				Response: Response{
-					StatusCode: 1,
-					StatusMsg:  "token error",
-				},
-				VideoList: nil,
-				NextTime:  0,
-			})
-			return
-		}
-	}
+func Feed(req *model.FeedRequest) (*model.FeedResponse, error) {
 
 	//fmt.Printf("%+v\n", req)
 
 	// 创建单例
 	userDAO := repository.NewUserDAO()
 	videoDAO := repository.NewVideoDAO()
+	favoriteDAO := repository.NewFavoriteDAO()
 
 	// 获取10条Video列表
 	var videoList = make([]repository.Video, 32)
 	err := videoDAO.GetVideoList(&videoList, 30, req.LatestTime)
 
-	var resList = make([]Video, len(videoList))
+	var resList = make([]model.Video, len(videoList))
 
 	// 给获取到的video加上作者信息和是否对这个视频点赞了
 	for i, video := range videoList {
 		// 加上作者信息
-		if err := userDAO.FindUserById(video.AuthorID, &videoList[i].Author); err != nil {
-			c.JSON(http.StatusOK, FeedResponse{
-				Response: Response{
+		if err := userDAO.FindUserById(video.AuthorID, (*repository.User)(&videoList[i].Author)); err != nil {
+			return &model.FeedResponse{
+				Response: model.Response{
 					StatusCode: 1,
 					StatusMsg:  "get author error",
 				},
 				VideoList: nil,
 				NextTime:  0,
-			})
-			return
+			}, err
 		}
 
 		resList[i].Video = video
 		resList[i].Author = videoList[i].Author
 
-		resList[i].IsFavorite = videoDAO.CheckIsFavorite(videoList[i].AuthorID, video.ID)
+		resList[i].IsFavorite = favoriteDAO.CheckIsFavorite(videoList[i].AuthorID, video.ID)
 
 		fmt.Printf("%+v\n", resList[i])
 	}
@@ -91,12 +55,12 @@ func Feed(c *gin.Context) {
 	}
 
 	// 返回结果
-	c.JSON(http.StatusOK, FeedResponse{
-		Response: Response{
+	return &model.FeedResponse{
+		Response: model.Response{
 			StatusCode: 0,
 			StatusMsg:  "ok",
 		},
 		VideoList: &resList,
 		NextTime:  videoList[0].PublishTime,
-	})
+	}, nil
 }

@@ -1,0 +1,19 @@
+# 数据库配置
+[mysql]
+host = "127.0.0.1"
+port = 3306
+database = "test_db"
+username = "root"
+password = "123456abc"
+charset = "utf8mb4"
+parse_time = true
+loc = "Local"
+
+[server]
+ip = "192.168.0.175"
+port = "9090"
+
+# 用于保存资源的路径，以及用于截图工具的路径（截图工具放在lib目录
+[path]
+ffmpeg_path = "D:\\Code\\gostudy\\demo1\\lib\\ffmpeg.exe"
+static_source_path = "D:\\Code\\gostudy\\demo1\\static"

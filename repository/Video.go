@@ -1,26 +1,16 @@
 package repository
 
 import (
+	"demo1/model/entity"
 	"errors"
 	"fmt"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"sync"
 	"time"
 )
 
-type Video struct {
-	ID            uint   `gorm:"primaryKey; not null" json:"id"`
-	PublishTime   int64  `gorm:"index; timestamp" json:"publish_time"`
-	Author        User   `gorm:"foreignKey:AuthorID" json:"author"`
-	AuthorID      uint   //`json:"author_id"`
-	PlayUrl       string `gorm:"type:varchar(128)" json:"play_url"`  // 播放地址
-	CoverUrl      string `gorm:"type:varchar(128)" json:"cover_url"` // 封面地址
-	FavoriteCount int64  `gorm:"not_null; default:0" json:"favorite_count"`
-	CommentCount  int64  `gorm:"not_null; default:0" json:"comment_count"`
-	Title         string ` json:"title"`
-}
-
-var VideoCount int64
+type Video entity.Video
 
 type VideoDAO struct {
 }
@@ -58,30 +48,21 @@ func (v *VideoDAO) FindVideoByPathAndUid(path string, uid int64, video *Video) e
 }
 
 // InsertVideo 将视频信息写入数据库，返回错误信息和错误
-func (v *VideoDAO) InsertVideo(uid uint, filepath string, title string) error {
+func (v *VideoDAO) InsertVideo(uid uint, playUrl string, coverUrl string, title string) error {
 
-	// TODO 判断是否已经存在了这个视频
-
-	// 生成url
-	// 视频url
-	VideoCount++
-	playUrl := "http://" + "120.76.119.43" + ":9090" + filepath
-	// 封面ur
-	coverUrl := "https://cdn.pixabay.com/photo/2016/03/27/18/10/bear-1283347_1280.jpg"
 	// 构造video
 	var author User
-	userDAO := NewUserDAO()
-	if err := userDAO.FindUserById(uid, &author); err != nil { // 找到作者
+	if err := NewUserDAO().FindUserById(uid, &author); err != nil { // 找到作者
 		return err
 	}
 
 	// 根据token获取视频上传者
-	fmt.Println(uid, filepath, title)
+	fmt.Println(uid, playUrl, title)
 
 	// 存入数据库
 	res := db.Create(&Video{
 		PublishTime:   time.Now().Unix(),
-		Author:        author,
+		Author:        entity.User(author),
 		AuthorID:      uid,
 		PlayUrl:       playUrl,
 		CoverUrl:      coverUrl,
@@ -120,6 +101,14 @@ func (v *VideoDAO) FindAllVideoByUid(uid uint, VideoList *[]Video) error {
 func (v *VideoDAO) FindVideoById(vid uint, video *Video) error {
 	if res := db.Model(&Video{}).Where("id = ?", vid).First(video); errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		fmt.Println("find video error")
+		return res.Error
+	}
+	return nil
+}
+
+func (v *VideoDAO) QueryVideoCountByUid(uid uint, count *int64) error {
+	if res := db.Model(&Video{}).Where("author_id =  ?", uid).Count(count); errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		zap.L().Error("find video error")
 		return res.Error
 	}
 	return nil

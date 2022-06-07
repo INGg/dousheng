@@ -1,6 +1,7 @@
 package main
 
 import (
+	"demo1/controller"
 	"demo1/middleware"
 	"demo1/service"
 	"github.com/gin-gonic/gin"
@@ -14,33 +15,33 @@ func initRouter(r *gin.Engine) {
 	// basic apis
 	// --feed--
 	feedRouter := apiRouter.Group("/feed")
-	feedRouter.GET("/", service.Feed) // /feed/
+	feedRouter.GET("/", controller.Feed) // /feed/
 
 	// --user--
 	userRouter := apiRouter.Group("/user")
-	userRouter.GET("/", service.UserInfo)           // /user/
-	userRouter.POST("/register/", service.Register) // /user/register/
-	userRouter.POST("/login/", service.Login)       // /user/login/
+	userRouter.GET("/", controller.UserInfo)           // /user/
+	userRouter.POST("/register/", controller.Register) // /user/register/
+	userRouter.POST("/login/", controller.Login)       // /user/login/
 
 	// --publish--
 	publishRouter := apiRouter.Group("/publish")
-	publishRouter.Use(middleware.JWTAuth())          // 声明中间件
-	publishRouter.POST("/action/", service.Publish)  // /publish/action/
-	publishRouter.GET("/list/", service.PublishList) // /publish/list/
+	publishRouter.Use(middleware.JWTAuth())             // 声明中间件
+	publishRouter.POST("/action/", controller.Publish)  // /publish/action/
+	publishRouter.GET("/list/", controller.PublishList) // /publish/list/
 
 	// extra apis - I
 
 	// --favorite--
 	favoriteRouter := apiRouter.Group("/favorite")
-	favoriteRouter.Use(middleware.JWTAuth())                // 声明中间件
-	favoriteRouter.POST("/action/", service.FavoriteAction) // /favorite/action/
-	favoriteRouter.GET("/list/", service.FavoriteList)      // /favorite/list/
+	favoriteRouter.Use(middleware.JWTAuth())                   // 声明中间件
+	favoriteRouter.POST("/action/", controller.FavoriteAction) // /favorite/action/
+	favoriteRouter.GET("/list/", controller.FavoriteList)      // /favorite/list/
 
 	// --comment--
 	commentRouter := apiRouter.Group("/comment")
-	commentRouter.Use(middleware.JWTAuth())               // 声明中间件
-	commentRouter.POST("/action/", service.CommentAction) // /comment/action/
-	commentRouter.GET("/list/", service.CommentList)      // /comment/list/
+	commentRouter.Use(middleware.JWTAuth())                  // 声明中间件
+	commentRouter.POST("/action/", controller.CommentAction) // /comment/action/
+	commentRouter.GET("/list/", controller.CommentList)      // /comment/list/
 
 	// extra apis - II
 	relationRouter := apiRouter.Group("/relation")

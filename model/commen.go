@@ -1,4 +1,4 @@
-package service
+package model
 
 import (
 	"demo1/repository"
@@ -33,6 +33,7 @@ type PublishActionRequest struct {
 	Data     *multipart.FileHeader `json:"data" form:"data"`
 	Title    string                `json:"title" form:"title"`
 	UserName string
+	UserID   uint
 }
 
 type PublishActionResponse struct {
@@ -92,12 +93,12 @@ type Comment struct {
 }
 
 type CommentActionRequest struct {
-	UserId      uint
+	UserID      uint
 	Token       string `json:"token" form:"token"`
-	VideoId     uint   `json:"video_id" form:"video_id"`
+	VideoID     uint   `json:"video_id" form:"video_id"`
 	ActionType  uint8  `json:"action_type" form:"action_type"`
 	CommentText string `json:"comment_text,omitempty" form:"comment_text"` // 用户填写的评论内容，在action_type=1的时候使用
-	CommentId   uint   `json:"comment_id,omitempty" form:"comment_id"`     // 要删除的评论id，在action_type=2的时候使用
+	CommentID   uint   `json:"comment_id,omitempty" form:"comment_id"`     // 要删除的评论id，在action_type=2的时候使用
 	UserName    string
 }
 
@@ -108,7 +109,7 @@ type CommentActionResponse struct {
 
 type CommentListRequest struct {
 	Token    string `json:"token" form:"token"`
-	VideoId  uint   `json:"video_id" form:"video_id"`
+	VideoID  uint   `json:"video_id" form:"video_id"`
 	UserName string
 }
 
@@ -143,9 +144,9 @@ type UserFollowerListResponse struct {
 }
 
 type UserFavoriteRequest struct {
-	UserId     uint   `json:"user_id" form:"user_id"`
+	UserID     uint
 	Token      string `json:"token" form:"token"`
-	VideoId    uint   `json:"video_id" form:"video_id"`
+	VideoID    uint   `json:"video_id" form:"video_id"`
 	ActionType int32  `json:"action_type" form:"action_type"`
 }
 
@@ -154,7 +155,7 @@ type UserFavoriteResponse struct {
 }
 
 type UserFavoriteListRequest struct {
-	UserId uint   `json:"user_id" form:"user_id"`
+	UserID uint   `json:"user_id" form:"user_id"`
 	Token  string `json:"token" form:"token"`
 }
 
