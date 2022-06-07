@@ -79,6 +79,7 @@ func Feed(c *gin.Context) {
 		}
 
 		resList[i].Video = video
+		resList[i].Author = videoList[i].Author
 
 		resList[i].IsFavorite = videoDAO.CheckIsFavorite(videoList[i].AuthorID, video.ID)
 

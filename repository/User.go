@@ -5,8 +5,8 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"log"
 	"sync"
 )
 
@@ -125,12 +125,42 @@ func (u *UserDAO) JudgeAFollowB(uida int64, uidb int64) bool {
 	return true
 }
 
-// AFollowB 让a关注/取关b，关注是1
-func (u *UserDAO) AFollowB(ctx *gin.Context, op int32) error {
+// UpdateUserFollowerCount 增加某人的粉丝数量
+func (u *UserDAO) UpdateUserFollowerCount(uid uint) error {
+	res := db.Model(&User{ID: uid}).UpdateColumn("follower_count", gorm.Expr("follower_count+?", 1))
+	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		log.Print("Update FollowerCount error")
+		return res.Error
+	}
 	return nil
 }
 
-//func (u *UserDAO) GetUserList(uid *[]uint, resUser *[]User) error {
-//var res []User
-//db.Find(&User{})
-//}
+// ReduceFollowerCount 减少某人的粉丝数量
+func (u *UserDAO) ReduceFollowerCount(uid uint) error {
+	res := db.Model(&User{ID: uid}).UpdateColumn("follower_count", gorm.Expr("follower_count-?", 1))
+	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		log.Print("Update FollowerCount error")
+		return res.Error
+	}
+	return nil
+}
+
+// UpdateUserFollowCount 增加某人的关注数量
+func (u *UserDAO) UpdateUserFollowCount(uid uint) error {
+	res := db.Model(&User{ID: uid}).UpdateColumn("follow_count", gorm.Expr("follow_count+?", 1))
+	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		log.Print("Update FollowCount error")
+		return res.Error
+	}
+	return nil
+}
+
+// ReduceFollowCount 减少某人的关注数量
+func (u *UserDAO) ReduceFollowCount(uid uint) error {
+	res := db.Model(&User{ID: uid}).UpdateColumn("follow_count", gorm.Expr("follow_count-?", 1))
+	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		log.Print("Update FollowerCount error")
+		return res.Error
+	}
+	return nil
+}

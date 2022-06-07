@@ -2,8 +2,8 @@ package service
 
 import (
 	"demo1/repository"
-	"net/http"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 //  ---favourite---
@@ -11,7 +11,7 @@ import (
 func FavoriteAction(c *gin.Context) {
 	var req UserFavoriteRequest
 	var user repository.User
-	var video *repository.Video
+	var video repository.Video
 
 	if err := c.ShouldBind(&req); err != nil {
 		c.JSON(http.StatusOK, UserFavoriteResponse{

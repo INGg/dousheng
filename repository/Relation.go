@@ -34,17 +34,20 @@ func (r *RelationDao) AddRelation(FollowerId uint, AuthorId uint) error {
 		AuthorId:   AuthorId,
 		FollowerId: FollowerId,
 	})
-	resAuthor := db.Model(&User{ID: AuthorId}).UpdateColumn("follower_count", gorm.Expr("follower_count+?", 1))
-	resFollower := db.Model(&User{ID: FollowerId}).UpdateColumn("follow_count", gorm.Expr("follow_count+?", 1))
+	// 拆分到了user
+	//resAuthor := db.Model(&User{ID: AuthorId}).UpdateColumn("follower_count", gorm.Expr("follower_count+?", 1))
+	// 拆分到了User
+	//resFollower := db.Model(&User{ID: FollowerId}).UpdateColumn("follow_count", gorm.Expr("follow_count+?", 1))
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		log.Print("Add Relation error")
+		return res.Error
 	}
-	if errors.Is(resAuthor.Error, gorm.ErrRecordNotFound) {
-		log.Print("Update FollowerCount error")
-	}
-	if errors.Is(resFollower.Error, gorm.ErrRecordNotFound) {
-		log.Print("Update FollowCount error")
-	}
+	//if errors.Is(resAuthor.Error, gorm.ErrRecordNotFound) {
+	//	log.Print("Update FollowerCount error")
+	//}
+	//if errors.Is(resFollower.Error, gorm.ErrRecordNotFound) {
+	//	log.Print("Update FollowCount error")
+	//}
 	log.Print("insert relation success")
 	return nil
 }
@@ -56,17 +59,20 @@ func (r *RelationDao) DeleteRelation(FollowerId uint, AuthorId uint) error {
 		FollowerId: FollowerId,
 	}).Delete(&Relation{})
 
-	resAuthor := db.Model(&User{ID: AuthorId}).UpdateColumn("follower_count", gorm.Expr("follower_count-?", 1))
-	resFollower := db.Model(&User{ID: FollowerId}).UpdateColumn("follow_count", gorm.Expr("follow_count-?", 1))
+	// 拆分到了User
+	//resAuthor := db.Model(&User{ID: AuthorId}).UpdateColumn("follower_count", gorm.Expr("follower_count-?", 1))
+	// 拆分到了User
+	//resFollower := db.Model(&User{ID: FollowerId}).UpdateColumn("follow_count", gorm.Expr("follow_count-?", 1))
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		log.Print("Delete relation error")
+		return res.Error
 	}
-	if errors.Is(resAuthor.Error, gorm.ErrRecordNotFound) {
-		log.Print("Update FollowerCount error")
-	}
-	if errors.Is(resFollower.Error, gorm.ErrRecordNotFound) {
-		log.Print("Update FollowCount error")
-	}
+	//if errors.Is(resAuthor.Error, gorm.ErrRecordNotFound) {
+	//	log.Print("Update FollowerCount error")
+	//}
+	//if errors.Is(resFollower.Error, gorm.ErrRecordNotFound) {
+	//	log.Print("Update FollowCount error")
+	//}
 	log.Print("Delete relation success")
 	return nil
 }
