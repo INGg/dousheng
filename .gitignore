@@ -7,7 +7,5 @@
 /static/
 /demo1.exe
 /repository/conf.go
-/lib/ffmpeg.exe
-/lib/ffprobe.exe
 /log/info.log
 /log/error.log
