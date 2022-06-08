@@ -4,8 +4,6 @@ import (
 	"demo1/model"
 	"demo1/model/entity"
 	"demo1/repository"
-	"errors"
-	"fmt"
 	"time"
 )
 
@@ -24,7 +22,7 @@ func AddComment(req *model.CommentActionRequest) (*model.CommentActionResponse, 
 				StatusMsg:  "create comment error",
 			},
 			Comment: model.Comment{},
-		}, errors.New("create comment error")
+		}, err
 	}
 
 	var author entity.User
@@ -35,7 +33,7 @@ func AddComment(req *model.CommentActionRequest) (*model.CommentActionResponse, 
 				StatusMsg:  "comment author not exists",
 			},
 			Comment: model.Comment{},
-		}, errors.New("comment author not exists")
+		}, err
 	}
 
 	// 请求的人是否关注了评论的人
@@ -67,7 +65,7 @@ func DeleteComment(req *model.CommentActionRequest) (*model.CommentActionRespons
 				StatusMsg:  "delete comment error",
 			},
 			Comment: model.Comment{},
-		}, errors.New("delete comment error")
+		}, err
 	}
 
 	return &model.CommentActionResponse{
@@ -76,7 +74,7 @@ func DeleteComment(req *model.CommentActionRequest) (*model.CommentActionRespons
 			StatusMsg:  "ok",
 		},
 		Comment: model.Comment{},
-	}, errors.New("comment delete ok")
+	}, err
 }
 
 // CommentList 查看视频的所有评论，按发布时间倒序
@@ -95,13 +93,18 @@ func CommentList(req *model.CommentListRequest) (*model.CommentListResponse, err
 				StatusMsg:  "get comment list error",
 			},
 			CommentList: nil,
-		}, errors.New("get comment list error")
+		}, err
 	}
 
-	fmt.Println("comment list length : ", len(commentList))
-	//for _, comment := range commentList {
-	//	fmt.Printf("%+v\n", comment)
-	//}
+	if len(commentList) == 0 {
+		return &model.CommentListResponse{
+			Response: model.Response{
+				StatusCode: 0,
+				StatusMsg:  "ok, but comment list is nil",
+			},
+			CommentList: nil,
+		}, nil
+	}
 
 	// 构造结果
 	var author entity.User
@@ -115,11 +118,13 @@ func CommentList(req *model.CommentListRequest) (*model.CommentListResponse, err
 					StatusMsg:  "comment author not exists",
 				},
 				CommentList: nil,
-			}, errors.New("comment author not exists")
+			}, err
 		}
 
 		// 请求的人是否关注了评论的人
-		author.IsFollow = relationDAO.QueryAFollowB(req.UserID, author.ID)
+		if req.FromUserID != 0 {
+			author.IsFollow = relationDAO.QueryAFollowB(req.FromUserID, author.ID)
+		}
 
 		resList[i] = model.Comment{
 			ID:         comment.ID,
@@ -129,9 +134,9 @@ func CommentList(req *model.CommentListRequest) (*model.CommentListResponse, err
 		}
 	}
 
-	for _, comment := range resList {
-		fmt.Printf("%+v\n", comment)
-	}
+	//for _, comment := range resList {
+	//	fmt.Printf("%+v\n", comment)
+	//}
 
 	// 返回结果
 	return &model.CommentListResponse{

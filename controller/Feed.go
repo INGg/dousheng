@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"demo1/middleware"
 	"demo1/model"
 	"demo1/service"
 	"github.com/gin-gonic/gin"
@@ -28,22 +27,7 @@ func Feed(c *gin.Context) {
 		req.LatestTime = time.Now().Unix()
 	}
 
-	// 解析token
-	if req.Token != "" {
-		uid, err := middleware.ParseToken(req.Token)
-		if err != nil {
-			c.JSON(http.StatusOK, model.FeedResponse{
-				Response: model.Response{
-					StatusCode: 1,
-					StatusMsg:  "token error",
-				},
-				VideoList: nil,
-				NextTime:  0,
-			})
-			return
-		}
-		req.UserID = uid.UserID
-	}
+	req.FromUserID = c.GetUint("user_id")
 
 	// 调用服务
 	feedResponse, err := service.Feed(&req)

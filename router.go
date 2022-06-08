@@ -14,6 +14,7 @@ func initRouter(r *gin.Engine) {
 	// basic apis
 	// --feed--
 	feedRouter := apiRouter.Group("/feed")
+	feedRouter.Use(middleware.JWTAuth())
 	feedRouter.GET("/", controller.Feed) // /feed/
 
 	// --user--

@@ -17,7 +17,7 @@ type Video struct {
 
 // -- feed --
 type FeedRequest struct {
-	UserID     uint
+	FromUserID uint
 	LatestTime int64  `json:"latest_time"`
 	Token      string `json:"token"`
 }
@@ -42,9 +42,9 @@ type PublishActionResponse struct {
 }
 
 type PublishListRequest struct {
-	Token    string `json:"token" form:"token"`
-	UserID   uint   `json:"user_id" form:"user_id"`
-	UserName string
+	Token      string `json:"token" form:"token"`
+	UserID     uint   `json:"user_id" form:"user_id"`
+	FromUserID uint
 }
 
 type PublishListResponse struct {
@@ -111,10 +111,9 @@ type CommentActionResponse struct {
 }
 
 type CommentListRequest struct {
-	Token    string `json:"token" form:"token"`
-	VideoID  uint   `json:"video_id" form:"video_id"`
-	UserName string
-	UserID   uint
+	Token      string `json:"token" form:"token"`
+	VideoID    uint   `json:"video_id" form:"video_id"`
+	FromUserID uint
 }
 
 type CommentListResponse struct {
@@ -135,8 +134,9 @@ type FollowActionResponse struct {
 }
 
 type UserFollowListRequest struct {
-	UserID uint   `json:"user_id" form:"user_id" `
-	Token  string `json:"token" form:"token"`
+	UserID     uint   `json:"user_id" form:"user_id" `
+	Token      string `json:"token" form:"token"`
+	FromUserID uint
 }
 
 type UserFollowListResponse struct {
@@ -145,8 +145,9 @@ type UserFollowListResponse struct {
 }
 
 type UserFollowerListRequest struct {
-	UserID uint   `json:"user_id" form:"user_id" `
-	Token  string `json:"token" form:"token"`
+	UserID     uint   `json:"user_id" form:"user_id" `
+	Token      string `json:"token" form:"token"`
+	FromUserID uint
 }
 
 type UserFollowerListResponse struct {
@@ -166,8 +167,9 @@ type UserFavoriteResponse struct {
 }
 
 type UserFavoriteListRequest struct {
-	UserID uint   `json:"user_id" form:"user_id"`
-	Token  string `json:"token" form:"token"`
+	UserID     uint   `json:"user_id" form:"user_id"`
+	Token      string `json:"token" form:"token"`
+	FromUserID uint
 }
 
 type UserFavoriteListResponse struct {

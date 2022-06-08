@@ -47,7 +47,7 @@ func FavoriteList(c *gin.Context) {
 		})
 	}
 
-	req.UserID = c.GetUint("user_id")
+	req.FromUserID = c.GetUint("user_id")
 
 	favoriteResponse, err := service.FavoriteList(&req)
 	if err != nil {

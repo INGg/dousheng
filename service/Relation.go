@@ -4,9 +4,19 @@ import (
 	"demo1/model"
 	"demo1/model/entity"
 	"demo1/repository"
+	"errors"
 )
 
 func AddRelation(req *model.FollowActionRequest) (*model.FollowActionResponse, error) {
+	if req.UserID == req.ToUserID {
+		return &model.FollowActionResponse{
+			Response: model.Response{
+				StatusCode: 1,
+				StatusMsg:  "you can't follow yourself",
+			},
+		}, errors.New("can't follow yourself")
+	}
+
 	//单例模式
 	relationDAO := repository.NewRelationDAO()
 	userDAO := repository.NewUserDAO()
@@ -97,7 +107,7 @@ func CancelRelation(req *model.FollowActionRequest) (*model.FollowActionResponse
 func FollowList(req *model.UserFollowListRequest) (*model.UserFollowListResponse, error) {
 
 	// 创建单例
-	UserD := repository.NewUserDAO()
+	UserDAO := repository.NewUserDAO()
 	relationDAO := repository.NewRelationDAO()
 
 	//准备参数
@@ -105,9 +115,17 @@ func FollowList(req *model.UserFollowListRequest) (*model.UserFollowListResponse
 	var userListR []entity.Relation
 
 	// 找到他关注的用户的所有id
-	relationDAO.QueryUserIDByFollowId(req.UserID, &userListR)
+	if err := relationDAO.QueryUsersIDByFollowId(req.UserID, &userListR); err != nil { // 说明没有关注
+		return &model.UserFollowListResponse{
+			Response: model.Response{
+				StatusCode: 1,
+				StatusMsg:  "find user follow error",
+			},
+			UserList: nil,
+		}, nil
+	}
 
-	if userListR == nil { // 说明没有关注
+	if len(userListR) == 0 { // 他没关注任何人
 		return &model.UserFollowListResponse{
 			Response: model.Response{
 				StatusCode: 0,
@@ -118,13 +136,13 @@ func FollowList(req *model.UserFollowListRequest) (*model.UserFollowListResponse
 	}
 
 	// 获取author中的 authorId
-	var userIdList = make([]uint, len(userList))
+	var userIdList = make([]uint, len(userListR))
 	for i, author := range userListR {
 		userIdList[i] = author.UserID
 	}
 
 	// 查找他关注的用户的信息
-	if err := UserD.FindUsersByIdList(&userIdList, &userList); err != nil {
+	if err := UserDAO.FindUsersByIdList(userIdList, &userList); err != nil {
 		return &model.UserFollowListResponse{
 			Response: model.Response{
 				StatusCode: 1,
@@ -134,8 +152,10 @@ func FollowList(req *model.UserFollowListRequest) (*model.UserFollowListResponse
 		}, err
 	}
 
-	for i := 0; i < len(userList); i++ {
-		userList[i].IsFollow = true
+	if req.FromUserID != 0 {
+		for i := 0; i < len(userList); i++ {
+			userList[i].IsFollow = relationDAO.QueryAFollowB(req.FromUserID, req.UserID)
+		}
 	}
 
 	return &model.UserFollowListResponse{
@@ -156,10 +176,17 @@ func FollowerList(req *model.UserFollowerListRequest) (*model.UserFollowerListRe
 	var followerList []entity.User
 	var relationList []entity.Relation
 
-	relationDAO.QueryFollowIdByUserID(req.UserID, &relationList)
+	if err := relationDAO.QueryFollowIdByUserID(req.UserID, &relationList); err != nil {
+		return &model.UserFollowerListResponse{
+			Response: model.Response{
+				StatusCode: 1,
+				StatusMsg:  "get follower list error",
+			},
+			UserList: nil,
+		}, err
+	}
 
-	// 没有粉丝是合法的
-	if relationList == nil {
+	if len(relationList) == 0 { // 说明该用户没有粉丝
 		return &model.UserFollowerListResponse{
 			Response: model.Response{
 				StatusCode: 0,
@@ -176,7 +203,7 @@ func FollowerList(req *model.UserFollowerListRequest) (*model.UserFollowerListRe
 		followerID[i] = relation.FollowID
 	}
 
-	if err := userDAO.FindUsersByIdList(&followerID, &followerList); err != nil {
+	if err := userDAO.FindUsersByIdList(followerID, &followerList); err != nil {
 		return &model.UserFollowerListResponse{
 			Response: model.Response{
 				StatusCode: 1,
@@ -186,8 +213,10 @@ func FollowerList(req *model.UserFollowerListRequest) (*model.UserFollowerListRe
 		}, err
 	}
 
-	for i := 0; i < len(followerList); i++ {
-		followerList[i].IsFollow = true
+	if req.FromUserID != 0 {
+		for i := 0; i < len(followerList); i++ {
+			followerList[i].IsFollow = relationDAO.QueryAFollowB(req.FromUserID, req.UserID)
+		}
 	}
 
 	return &model.UserFollowerListResponse{

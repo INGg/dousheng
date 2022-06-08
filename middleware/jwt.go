@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
+	"go.uber.org/zap"
 	"net/http"
 	"time"
 )
@@ -61,11 +62,15 @@ func JWTAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		//fmt.Printf("%+v\n", c.Request)
 		token := c.DefaultQuery("token", "")
-		fmt.Println("in jwt middle, token : ", token)
+		//fmt.Println("in jwt middle, token : ", token)
 		if token == "" {
+			// 当无登陆状态时也会请求这两个方法
+			if c.Request.URL.Path[len(c.Request.URL.Path)-5:len(c.Request.URL.Path)-1] == "list" || c.Request.URL.Path[len(c.Request.URL.Path)-5:len(c.Request.URL.Path)-1] == "feed" {
+				return
+			}
 			token = c.PostForm("token")
 			if token == "" {
-				fmt.Println("token is empty")
+				zap.L().Error("token is empty")
 				c.JSON(http.StatusUnauthorized, gin.H{
 					"status_code": 1,
 					"status_msg":  "token is empty",

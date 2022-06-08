@@ -74,22 +74,38 @@ func PublishList(req *model.PublishListRequest) (*model.PublishListResponse, err
 		}, err
 	}
 
-	resList := make([]model.Video, len(videoList))
+	if len(videoList) == 0 { // 该用户没发过视频
+		return &model.PublishListResponse{
+			Response: model.Response{
+				StatusCode: 0,
+				StatusMsg:  "ok, publish list is nil",
+			},
+			VideoList: nil,
+		}, nil
+	}
 
-	//for i, video := range videoList {
-	//	fmt.Println(i, video)
-	//}
+	resList := make([]model.Video, len(videoList))
 
 	for i, video := range videoList {
 		resList[i].Video = video
-		userDAO.FindUserById(video.AuthorID, &resList[i].Video.Author)
-		resList[i].Video.Author.IsFollow = relationDAO.QueryAFollowB(req.UserID, resList[i].AuthorID)
-		resList[i].IsFavorite = favoriteDAO.CheckIsFavorite(resList[i].AuthorID, video.ID)
+		if err := userDAO.FindUserById(video.AuthorID, &resList[i].Video.Author); err != nil {
+			return &model.PublishListResponse{
+				Response: model.Response{
+					StatusCode: 1,
+					StatusMsg:  "get published list error",
+				},
+				VideoList: nil,
+			}, nil
+		}
+		if req.FromUserID != 0 {
+			resList[i].Video.Author.IsFollow = relationDAO.QueryAFollowB(req.FromUserID, resList[i].AuthorID)
+		}
+		resList[i].IsFavorite = favoriteDAO.CheckIsFavorite(req.FromUserID, video.ID)
 	}
 
-	for i, video := range resList {
-		fmt.Printf("resList[%v]: %+v\n", i, video)
-	}
+	//for i, video := range resList {
+	//	fmt.Printf("resList[%v]: %+v\n", i, video)
+	//}
 
 	return &model.PublishListResponse{
 		Response: model.Response{

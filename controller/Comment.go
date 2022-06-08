@@ -68,8 +68,7 @@ func CommentList(c *gin.Context) {
 		return
 	}
 
-	req.UserName = c.GetString("username")
-	req.UserID = c.GetUint("user_id")
+	req.FromUserID = c.GetUint("user_id")
 
 	// 调用服务
 	listResponse, err := service.CommentList(&req)

@@ -50,8 +50,8 @@ func (f *FavoriteDAO) UnFavorite(uid uint, vid uint) error {
 	return nil
 }
 
-func (f *FavoriteDAO) FindFavoriteVideoByUid(uid uint, videoList *[]entity.Video) error {
-	res := db.Model(entity.Favorite{}).Select("video_id").Where("user_id = ?", uid).Find(&videoList)
+func (f *FavoriteDAO) FindFavoriteVideoByUid(uid uint, vids *[]uint) error {
+	res := db.Model(entity.Favorite{}).Select("video_id").Where("user_id = ?", uid).Find(vids)
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		zap.L().Error("vid can't find error")
 		return res.Error

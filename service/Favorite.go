@@ -4,7 +4,6 @@ import (
 	"demo1/model"
 	"demo1/model/entity"
 	"demo1/repository"
-	"errors"
 	"fmt"
 	"go.uber.org/zap"
 )
@@ -24,7 +23,7 @@ func FavoriteAction(req *model.UserFavoriteRequest) (*model.UserFavoriteResponse
 				StatusCode: 1,
 				StatusMsg:  "User can't find error",
 			},
-		}, errors.New("FavoriteAction User can't find error")
+		}, err
 	}
 
 	if err := videoDAO.FindVideoById(req.VideoID, &video); err != nil {
@@ -33,7 +32,7 @@ func FavoriteAction(req *model.UserFavoriteRequest) (*model.UserFavoriteResponse
 				StatusCode: 1,
 				StatusMsg:  "Video can't find error",
 			},
-		}, errors.New("FavoriteAction Video can't find error")
+		}, err
 	}
 
 	// 判断操作类型
@@ -64,7 +63,7 @@ func addFavorite(req *model.UserFavoriteRequest) (*model.UserFavoriteResponse, e
 				StatusCode: 1,
 				StatusMsg:  "Add into favorite list error",
 			},
-		}, errors.New("add into favorite list error")
+		}, err
 	}
 	//video.FavoriteCount++
 	if err := favoriteDAO.AddFavoriteCount(req.VideoID); err != nil {
@@ -73,7 +72,7 @@ func addFavorite(req *model.UserFavoriteRequest) (*model.UserFavoriteResponse, e
 				StatusCode: 1,
 				StatusMsg:  "Add favorite count error",
 			},
-		}, errors.New("add favorite count error")
+		}, err
 	}
 
 	return &model.UserFavoriteResponse{
@@ -96,7 +95,7 @@ func cancelFavorite(req *model.UserFavoriteRequest) (*model.UserFavoriteResponse
 				StatusCode: 1,
 				StatusMsg:  "Delete from favorite list error",
 			},
-		}, errors.New("delete from favorite list error")
+		}, err
 	}
 	// 视频的点赞数量减少
 	if err := favoriteDAO.ReduceFavoriteCount(req.VideoID); err != nil {
@@ -105,7 +104,7 @@ func cancelFavorite(req *model.UserFavoriteRequest) (*model.UserFavoriteResponse
 				StatusCode: 1,
 				StatusMsg:  "Reduce favorite count error",
 			},
-		}, errors.New("reduce favorite count error")
+		}, err
 	}
 
 	// 成功
@@ -126,21 +125,33 @@ func FavoriteList(req *model.UserFavoriteListRequest) (*model.UserFavoriteListRe
 	relationDAO := repository.NewRelationDAO()
 
 	// 结构数组
-	var videoList []entity.Video
+	var vids []uint
 
-	if err := favoriteDAO.FindFavoriteVideoByUid(req.UserID, &videoList); err != nil {
+	if err := favoriteDAO.FindFavoriteVideoByUid(req.UserID, &vids); err != nil {
 		return &model.UserFavoriteListResponse{
 			Response: model.Response{
 				StatusCode: 1,
 				StatusMsg:  "Can't find favorite video list by uid",
 			},
 			VideoList: nil,
-		}, errors.New("can't find favorite video list by uid")
+		}, err
 	}
+
+	if len(vids) == 0 {
+		return &model.UserFavoriteListResponse{
+			Response: model.Response{
+				StatusCode: 0,
+				StatusMsg:  "ok, but list is nil",
+			},
+			VideoList: nil,
+		}, nil
+	}
+
+	videoList := make([]entity.Video, len(vids))
 
 	for i := 0; i < len(videoList); i++ {
 		// 找一下视频信息
-		if err := videoDAO.FindVideoById(videoList[i].ID, &videoList[i]); err != nil {
+		if err := videoDAO.FindVideoById(vids[i], &videoList[i]); err != nil {
 			zap.L().Error(fmt.Sprintf("vid:%v can't find", videoList[i].ID))
 		}
 
@@ -150,10 +161,12 @@ func FavoriteList(req *model.UserFavoriteListRequest) (*model.UserFavoriteListRe
 		}
 
 		// 请求的人是否关注了作者
-		videoList[i].Author.IsFollow = relationDAO.QueryAFollowB(req.UserID, videoList[i].AuthorID)
+		if req.FromUserID != 0 {
+			videoList[i].Author.IsFollow = relationDAO.QueryAFollowB(req.FromUserID, videoList[i].AuthorID)
+		}
 
 		// 请求的人有没有给视频点赞
-		videoList[i].IsFavorite = favoriteDAO.CheckIsFavorite(req.UserID, videoList[i].ID)
+		videoList[i].IsFavorite = favoriteDAO.CheckIsFavorite(req.FromUserID, videoList[i].ID)
 	}
 
 	return &model.UserFavoriteListResponse{

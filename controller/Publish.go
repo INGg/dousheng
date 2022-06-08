@@ -17,7 +17,7 @@ func Publish(c *gin.Context) {
 	if err := c.ShouldBind(&req); err != nil {
 		fmt.Println("publish should bind error")
 		fmt.Println(err.Error())
-		c.JSON(http.StatusOK, model.PublishActionResponse{
+		c.JSON(http.StatusOK, &model.PublishActionResponse{
 			Response: model.Response{
 				StatusCode: 1,
 				StatusMsg:  "publish should bind error",
@@ -45,8 +45,8 @@ func Publish(c *gin.Context) {
 	//fmt.Println("上传文件成功")
 
 	if err := c.SaveUploadedFile(file, path); err != nil { // 保存失败返回失败信息
-		fmt.Println("video save error")
-		c.JSON(http.StatusOK, model.PublishActionResponse{
+		zap.L().Error("video save error")
+		c.JSON(http.StatusOK, &model.PublishActionResponse{
 			Response: model.Response{
 				StatusCode: 1,
 				StatusMsg:  "video save error",
@@ -67,9 +67,8 @@ func Publish(c *gin.Context) {
 func PublishList(c *gin.Context) {
 	var req model.PublishListRequest
 	if err := c.ShouldBind(&req); err != nil {
-
-		fmt.Println("get published list should bind error")
-		c.JSON(http.StatusOK, model.PublishListResponse{
+		zap.L().Error("get published list should bind error")
+		c.JSON(http.StatusOK, &model.PublishListResponse{
 			Response: model.Response{
 				StatusCode: 1,
 				StatusMsg:  "get published list should bind error",
@@ -78,9 +77,9 @@ func PublishList(c *gin.Context) {
 		})
 	}
 
-	req.UserName = c.GetString("username")
-
 	zap.L().Info(fmt.Sprintf("PublishListRequest user id : %+v\n", req.UserID))
+
+	req.FromUserID = c.GetUint("user_id")
 
 	// 调用服务
 	listResponse, err := service.PublishList(&req)

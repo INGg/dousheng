@@ -3,8 +3,8 @@ package repository
 import (
 	"demo1/model/entity"
 	"errors"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
-	"log"
 	"sync"
 )
 
@@ -30,10 +30,10 @@ func (r *RelationDao) AddRelation(FollowerId uint, AuthorId uint) error {
 		FollowID: FollowerId,
 	})
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-		log.Print("Add Relation error")
+		zap.L().Error("Add Relation error")
 		return res.Error
 	}
-	log.Print("insert relation success")
+	zap.L().Info("insert relation success")
 	return nil
 }
 
@@ -45,24 +45,24 @@ func (r *RelationDao) DeleteRelation(FollowerId uint, AuthorId uint) error {
 	}).Delete(&entity.Relation{})
 
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-		log.Print("Delete relation error")
+		zap.L().Error("Delete relation error")
 		return res.Error
 	}
-	log.Print("Delete relation success")
+	zap.L().Info("Delete relation success")
 	return nil
 }
 
 // QueryFollowIdByUserID 查询当前用户的关注列表(id)
-func (r *RelationDao) QueryFollowIdByUserID(AuthorId uint, RelationList *[]entity.Relation) error {
-	res := db.Model(&entity.Relation{}).Where("user_id = ?", AuthorId).Find(RelationList)
+func (r *RelationDao) QueryFollowIdByUserID(uid uint, RelationList *[]entity.Relation) error {
+	res := db.Model(&entity.Relation{}).Where("user_id = ?", uid).Find(RelationList)
 	if res.Error != nil {
 		return res.Error
 	}
 	return nil
 }
 
-// QueryUserIDByFollowId 查询当前用户的粉丝(id)
-func (r *RelationDao) QueryUserIDByFollowId(FollowerId uint, relationList *[]entity.Relation) error {
+// QueryUsersIDByFollowId 查询当前用户的粉丝(id)
+func (r *RelationDao) QueryUsersIDByFollowId(FollowerId uint, relationList *[]entity.Relation) error {
 	res := db.Model(&entity.Relation{}).Where("follow_id = ?", FollowerId).Find(relationList)
 	if res.Error != nil {
 		return res.Error

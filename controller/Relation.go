@@ -58,7 +58,7 @@ func FollowList(c *gin.Context) {
 
 	if err := c.ShouldBind(&req); err != nil {
 		// 无法将参数赋值到req中
-		c.JSON(200, model.UserFollowListResponse{
+		c.JSON(http.StatusOK, model.UserFollowListResponse{
 			Response: model.Response{
 				StatusCode: 1,
 				StatusMsg:  "无法获取关注列表",
@@ -67,7 +67,7 @@ func FollowList(c *gin.Context) {
 		})
 	}
 
-	req.UserID = c.GetUint("user_id")
+	req.FromUserID = c.GetUint("user_id")
 
 	var followListResponse *model.UserFollowListResponse
 	var err error
@@ -90,7 +90,7 @@ func FollowerList(c *gin.Context) {
 
 	// 参数错误.无法赋值到req中
 	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(200, model.UserFollowerListResponse{
+		c.JSON(http.StatusOK, model.UserFollowerListResponse{
 			Response: model.Response{
 				StatusCode: 1,
 				StatusMsg:  "参数错误",
@@ -98,6 +98,8 @@ func FollowerList(c *gin.Context) {
 			UserList: nil,
 		})
 	}
+
+	req.FromUserID = c.GetUint("user_id")
 
 	var followerListResponse *model.UserFollowerListResponse
 	var err error

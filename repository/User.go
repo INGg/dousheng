@@ -4,7 +4,6 @@ import (
 	"demo1/middleware"
 	"demo1/model/entity"
 	"demo1/util"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"gorm.io/gorm"
@@ -55,7 +54,7 @@ func (u *UserDAO) FindUserById(id uint, user *entity.User) error {
 }
 
 // FindUsersByIdList 通过id数组找到user数组
-func (u *UserDAO) FindUsersByIdList(idList *[]uint, userList *[]entity.User) error {
+func (u *UserDAO) FindUsersByIdList(idList []uint, userList *[]entity.User) error {
 	if res := db.Model(entity.User{}).Select("name", "id", "follow_count", "follower_count").Where("id IN ?", idList).Find(userList); errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		fmt.Println("find user error")
 		return res.Error
@@ -73,8 +72,6 @@ func (u *UserDAO) CreateUser(username string, pwd string) (uid uint, token strin
 	}
 
 	res := db.Create(&user)
-
-	//UserCount++
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return 0, "", res.Error
 	}
@@ -95,17 +92,11 @@ func (u *UserDAO) CheckUserPwd(username string, pwd string) (uid uint, ok bool) 
 	db.Where("name = ?", username).First(&user)
 	// 构造password进行比对
 
-	if user.Password != base64.StdEncoding.EncodeToString([]byte(pwd)) {
+	if user.Password != util.MakeMD5(pwd) {
 		return 0, false
 	} else {
 		return user.ID, true
 	}
-}
-
-// JudgeAFollowB 判断a是否关注了b
-func (u *UserDAO) JudgeAFollowB(uida int64, uidb int64) bool {
-	//res := db.Where()
-	return true
 }
 
 // UpdateUserFollowerCount 增加某人的粉丝数量
