@@ -30,7 +30,7 @@ func Feed(c *gin.Context) {
 
 	// 解析token
 	if req.Token != "" {
-		_, err := middleware.ParseToken(req.Token)
+		uid, err := middleware.ParseToken(req.Token)
 		if err != nil {
 			c.JSON(http.StatusOK, model.FeedResponse{
 				Response: model.Response{
@@ -42,6 +42,7 @@ func Feed(c *gin.Context) {
 			})
 			return
 		}
+		req.UserID = uid.UserID
 	}
 
 	// 调用服务

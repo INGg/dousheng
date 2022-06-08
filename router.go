@@ -3,7 +3,6 @@ package main
 import (
 	"demo1/controller"
 	"demo1/middleware"
-	"demo1/service"
 	"github.com/gin-gonic/gin"
 )
 
@@ -45,8 +44,8 @@ func initRouter(r *gin.Engine) {
 
 	// extra apis - II
 	relationRouter := apiRouter.Group("/relation")
-	relationRouter.Use(middleware.JWTAuth())                    // 声明中间件
-	relationRouter.POST("/action/", service.RelationAction)     // /relation/action/
-	relationRouter.GET("/follow/list/", service.FollowList)     // /relation/follow/list/
-	relationRouter.GET("/follower/list/", service.FollowerList) // /relation/follower/list/
+	relationRouter.Use(middleware.JWTAuth())                       // 声明中间件
+	relationRouter.POST("/action/", controller.RelationAction)     // /relation/action/
+	relationRouter.GET("/follow/list/", controller.FollowList)     // /relation/follow/list/
+	relationRouter.GET("/follower/list/", controller.FollowerList) // /relation/follower/list/
 }

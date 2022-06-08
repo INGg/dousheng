@@ -2,6 +2,7 @@ package service
 
 import (
 	"demo1/model"
+	"demo1/model/entity"
 	"demo1/repository"
 	"errors"
 	"fmt"
@@ -10,8 +11,8 @@ import (
 
 // FavoriteAction 登录用户对视频的点赞和取消点赞操作
 func FavoriteAction(req *model.UserFavoriteRequest) (*model.UserFavoriteResponse, error) {
-	var user repository.User
-	var video repository.Video
+	var user entity.User
+	var video entity.Video
 
 	// 创建单例
 	userDAO := repository.NewUserDAO()
@@ -122,9 +123,10 @@ func FavoriteList(req *model.UserFavoriteListRequest) (*model.UserFavoriteListRe
 	favoriteDAO := repository.NewFavoriteDAO()
 	videoDAO := repository.NewVideoDAO()
 	userDAO := repository.NewUserDAO()
+	relationDAO := repository.NewRelationDAO()
 
 	// 结构数组
-	var videoList []repository.Video
+	var videoList []entity.Video
 
 	if err := favoriteDAO.FindFavoriteVideoByUid(req.UserID, &videoList); err != nil {
 		return &model.UserFavoriteListResponse{
@@ -143,9 +145,15 @@ func FavoriteList(req *model.UserFavoriteListRequest) (*model.UserFavoriteListRe
 		}
 
 		// 找一下作者信息
-		if err := userDAO.FindUserById(videoList[i].AuthorID, (*repository.User)(&videoList[i].Author)); err != nil {
+		if err := userDAO.FindUserById(videoList[i].AuthorID, &videoList[i].Author); err != nil {
 			zap.L().Error(fmt.Sprintf("uid:%v can't find", videoList[i].AuthorID))
 		}
+
+		// 请求的人是否关注了作者
+		videoList[i].Author.IsFollow = relationDAO.QueryAFollowB(req.UserID, videoList[i].AuthorID)
+
+		// 请求的人有没有给视频点赞
+		videoList[i].IsFavorite = favoriteDAO.CheckIsFavorite(req.UserID, videoList[i].ID)
 	}
 
 	return &model.UserFavoriteListResponse{
@@ -153,6 +161,6 @@ func FavoriteList(req *model.UserFavoriteListRequest) (*model.UserFavoriteListRe
 			StatusCode: 0,
 			StatusMsg:  "Get favorite list success",
 		},
-		VideoList: videoList,
+		VideoList: &videoList,
 	}, nil
 }

@@ -1,20 +1,10 @@
 package repository
 
 import (
-	"gorm.io/gorm"
+	"demo1/model/entity"
 	"sync"
 	"time"
 )
-
-type Comment struct {
-	ID                 uint   `gorm:"primaryKey; not null" json:"comment_id"`
-	CommentPublishTime int64  `gorm:"timestamp"`
-	Content            string `gorm:"varchar(256)" json:"content"`
-	AuthorID           uint   `gorm:"not null;"`
-	Video              Video  `gorm:"foreignKey:VideoID"`
-	VideoID            uint   `gorm:"index"`
-	DeletedAt          gorm.DeletedAt
-}
 
 type CommentDAO struct {
 }
@@ -33,7 +23,7 @@ func NewCommentDAO() *CommentDAO {
 
 // CreateComment 增加评论，返回评论的id和错误类型
 func (c *CommentDAO) CreateComment(uid uint, videoID uint, content *string) (uint, error) {
-	comment := &Comment{
+	comment := &entity.Comment{
 		CommentPublishTime: time.Now().Unix(),
 		Content:            *content,
 		AuthorID:           uid,
@@ -48,7 +38,7 @@ func (c *CommentDAO) CreateComment(uid uint, videoID uint, content *string) (uin
 
 // DeleteCommentById 通过评论的id删除评论，成功删除返回true
 func (c *CommentDAO) DeleteCommentById(cid uint) error {
-	res := db.Delete(&Comment{}, cid)
+	res := db.Delete(&entity.Comment{}, cid)
 	if res.Error != nil {
 		return res.Error
 	}
@@ -57,12 +47,12 @@ func (c *CommentDAO) DeleteCommentById(cid uint) error {
 
 func (c *CommentDAO) VideoCommentCount(vid uint) int64 {
 	var count int64
-	db.Model(&Comment{}).Where("video_id = ?", vid).Count(&count)
+	db.Model(&entity.Comment{}).Where("video_id = ?", vid).Count(&count)
 	return count
 }
 
-func (c *CommentDAO) GetAllComment(list *[]Comment, vid uint) error {
-	res := db.Model(&Comment{}).Order("comment_publish_time desc").Where("video_id = ?", vid).Find(list)
+func (c *CommentDAO) GetAllComment(list *[]entity.Comment, vid uint) error {
+	res := db.Model(&entity.Comment{}).Order("comment_publish_time desc").Where("video_id = ?", vid).Find(list)
 	if res.Error != nil {
 		return res.Error
 	}

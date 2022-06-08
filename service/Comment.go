@@ -2,6 +2,7 @@ package service
 
 import (
 	"demo1/model"
+	"demo1/model/entity"
 	"demo1/repository"
 	"errors"
 	"fmt"
@@ -13,6 +14,7 @@ func AddComment(req *model.CommentActionRequest) (*model.CommentActionResponse, 
 	// 创建单例
 	commentDao := repository.NewCommentDAO()
 	userDao := repository.NewUserDAO()
+	relationDAO := repository.NewRelationDAO()
 
 	commentId, err := commentDao.CreateComment(req.UserID, req.VideoID, &req.CommentText)
 	if err != nil {
@@ -25,8 +27,8 @@ func AddComment(req *model.CommentActionRequest) (*model.CommentActionResponse, 
 		}, errors.New("create comment error")
 	}
 
-	var author model.User
-	if err := userDao.FindUserById(req.UserID, (*repository.User)(&author)); err != nil { // 找作者信息
+	var author entity.User
+	if err := userDao.FindUserById(req.UserID, &author); err != nil { // 找作者信息
 		return &model.CommentActionResponse{
 			Response: model.Response{
 				StatusCode: 1,
@@ -35,6 +37,9 @@ func AddComment(req *model.CommentActionRequest) (*model.CommentActionResponse, 
 			Comment: model.Comment{},
 		}, errors.New("comment author not exists")
 	}
+
+	// 请求的人是否关注了评论的人
+	author.IsFollow = relationDAO.QueryAFollowB(req.UserID, author.ID)
 
 	return &model.CommentActionResponse{
 		Response: model.Response{
@@ -80,8 +85,9 @@ func CommentList(req *model.CommentListRequest) (*model.CommentListResponse, err
 	// 创建单例
 	commentDAO := repository.NewCommentDAO()
 	userDao := repository.NewUserDAO()
+	relationDAO := repository.NewRelationDAO()
 
-	var commentList []repository.Comment // 猜想，如果评论量特别大的话，是不是可以做成分段查询的，how，是不是需要前端来请求
+	var commentList []entity.Comment // 猜想，如果评论量特别大的话，是不是可以做成分段查询的，how，是不是需要前端来请求
 	if err := commentDAO.GetAllComment(&commentList, req.VideoID); err != nil {
 		return &model.CommentListResponse{
 			Response: model.Response{
@@ -98,11 +104,11 @@ func CommentList(req *model.CommentListRequest) (*model.CommentListResponse, err
 	//}
 
 	// 构造结果
-	var author model.User
+	var author entity.User
 	resList := make([]model.Comment, len(commentList))
 	for i, comment := range commentList {
 		// 找到评论作者信息
-		if err := userDao.FindUserById(comment.AuthorID, (*repository.User)(&author)); err != nil {
+		if err := userDao.FindUserById(comment.AuthorID, &author); err != nil {
 			return &model.CommentListResponse{
 				Response: model.Response{
 					StatusCode: 1,
@@ -111,6 +117,10 @@ func CommentList(req *model.CommentListRequest) (*model.CommentListResponse, err
 				CommentList: nil,
 			}, errors.New("comment author not exists")
 		}
+
+		// 请求的人是否关注了评论的人
+		author.IsFollow = relationDAO.QueryAFollowB(req.UserID, author.ID)
+
 		resList[i] = model.Comment{
 			ID:         comment.ID,
 			User:       author, // 如果这个能直接成功拿到的话，前面有一个通过id来找人的逻辑就不用写了

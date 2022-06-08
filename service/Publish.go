@@ -2,6 +2,7 @@ package service
 
 import (
 	"demo1/model"
+	"demo1/model/entity"
 	"demo1/repository"
 	"demo1/util"
 	"errors"
@@ -58,10 +59,12 @@ func PublishList(req *model.PublishListRequest) (*model.PublishListResponse, err
 	// 创建单例
 	userDAO := repository.NewUserDAO()
 	videoDAO := repository.NewVideoDAO()
+	favoriteDAO := repository.NewFavoriteDAO()
+	relationDAO := repository.NewRelationDAO()
 
-	var videoList []repository.Video
+	var videoList []entity.Video
 
-	if err := videoDAO.FindAllVideoByUid(req.UserId, &videoList); err != nil {
+	if err := videoDAO.FindAllVideoByUid(req.UserID, &videoList); err != nil {
 		return &model.PublishListResponse{
 			Response: model.Response{
 				StatusCode: 1,
@@ -79,8 +82,9 @@ func PublishList(req *model.PublishListRequest) (*model.PublishListResponse, err
 
 	for i, video := range videoList {
 		resList[i].Video = video
-		userDAO.FindUserById(video.AuthorID, (*repository.User)(&resList[i].Video.Author))
-		//resList[i].IsFavorite = videoDAO.CheckIsFavorite(resList[i].AuthorID, video.ID)
+		userDAO.FindUserById(video.AuthorID, &resList[i].Video.Author)
+		resList[i].Video.Author.IsFollow = relationDAO.QueryAFollowB(req.UserID, resList[i].AuthorID)
+		resList[i].IsFavorite = favoriteDAO.CheckIsFavorite(resList[i].AuthorID, video.ID)
 	}
 
 	for i, video := range resList {

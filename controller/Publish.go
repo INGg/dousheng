@@ -80,7 +80,7 @@ func PublishList(c *gin.Context) {
 
 	req.UserName = c.GetString("username")
 
-	zap.L().Info(fmt.Sprintf("PublishListRequest user id : %+v\n", req.UserId))
+	zap.L().Info(fmt.Sprintf("PublishListRequest user id : %+v\n", req.UserID))
 
 	// 调用服务
 	listResponse, err := service.PublishList(&req)

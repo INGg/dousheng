@@ -2,6 +2,7 @@ package controller
 
 import (
 	"demo1/model"
+	"demo1/model/entity"
 	"demo1/service"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -19,7 +20,7 @@ func Register(c *gin.Context) {
 				StatusCode: 1,
 				StatusMsg:  "login should bind error",
 			},
-			UserId: 0,
+			UserID: 0,
 			Token:  "",
 		})
 		return
@@ -47,7 +48,7 @@ func Login(c *gin.Context) {
 				StatusCode: 1,
 				StatusMsg:  "login should bind error",
 			},
-			UserId: 0,
+			UserID: 0,
 			Token:  "",
 		})
 		return
@@ -72,7 +73,7 @@ func UserInfo(c *gin.Context) {
 				StatusCode: 1,
 				StatusMsg:  "UserInfo should bind error",
 			},
-			User: model.User{},
+			User: entity.User{},
 		})
 		return
 	}
@@ -83,7 +84,7 @@ func UserInfo(c *gin.Context) {
 	if err != nil {
 		zap.L().Error(err.Error())
 	} else {
-		zap.L().Info(fmt.Sprintf("get uid : %v user info", req.UserId))
+		zap.L().Info(fmt.Sprintf("get uid : %v user info", req.UserID))
 	}
 	c.JSON(http.StatusOK, &infoResponse)
 }

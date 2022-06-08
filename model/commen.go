@@ -1,7 +1,7 @@
 package model
 
 import (
-	"demo1/repository"
+	"demo1/model/entity"
 	"mime/multipart"
 )
 
@@ -11,13 +11,13 @@ type Response struct {
 }
 
 type Video struct {
-	repository.Video
+	entity.Video
 	IsFavorite bool
 }
 
-type User repository.User
-
+// -- feed --
 type FeedRequest struct {
+	UserID     uint
 	LatestTime int64  `json:"latest_time"`
 	Token      string `json:"token"`
 }
@@ -28,6 +28,7 @@ type FeedResponse struct {
 	NextTime  int64    `json:"next_time"`
 }
 
+// -- publish --
 type PublishActionRequest struct {
 	Token    string                `json:"token" form:"token"`
 	Data     *multipart.FileHeader `json:"data" form:"data"`
@@ -42,7 +43,7 @@ type PublishActionResponse struct {
 
 type PublishListRequest struct {
 	Token    string `json:"token" form:"token"`
-	UserId   uint   `json:"user_id" form:"user_id"`
+	UserID   uint   `json:"user_id" form:"user_id"`
 	UserName string
 }
 
@@ -51,15 +52,16 @@ type PublishListResponse struct {
 	VideoList *[]Video `json:"video_list"`
 }
 
+// -- user --
 type UserInfoRequest struct {
 	Token    string `json:"token" form:"token"`
-	UserId   uint   `json:"user_id" form:"user_id" `
+	UserID   uint   `json:"user_id" form:"user_id" `
 	UserName string
 }
 
 type UserInfoResponse struct {
 	Response
-	User User `json:"user"`
+	User entity.User `json:"user"`
 }
 
 type UserLoginRequest struct {
@@ -69,7 +71,7 @@ type UserLoginRequest struct {
 
 type UserLoginResponse struct {
 	Response
-	UserId uint   `json:"user_id"`
+	UserID uint   `json:"user_id"`
 	Token  string `json:"token"`
 }
 
@@ -80,16 +82,17 @@ type UserRegisterRequest struct {
 
 type UserResisterResponse struct {
 	Response
-	UserId uint   `json:"user_id"`
+	UserID uint   `json:"user_id"`
 	Token  string `json:"token"`
 }
 
+// -- comment --
 // Comment 这里的comment和repository里的comment本质是没有太大的区别，这里只是为了请求好返回
 type Comment struct {
-	ID         uint   `json:"id"`
-	User       User   `json:"user"`
-	Content    string `json:"content"`
-	CreateDate string `json:"create_date"` // 评论发布日期，格式 mm-dd
+	ID         uint        `json:"id"`
+	User       entity.User `json:"user"`
+	Content    string      `json:"content"`
+	CreateDate string      `json:"create_date"` // 评论发布日期，格式 mm-dd
 }
 
 type CommentActionRequest struct {
@@ -111,6 +114,7 @@ type CommentListRequest struct {
 	Token    string `json:"token" form:"token"`
 	VideoID  uint   `json:"video_id" form:"video_id"`
 	UserName string
+	UserID   uint
 }
 
 type CommentListResponse struct {
@@ -118,29 +122,36 @@ type CommentListResponse struct {
 	CommentList *[]Comment `json:"comment_list"`
 }
 
+// --Relation--
 type FollowActionRequest struct {
-	UserId     uint   `json:"user_id" form:"user_id" `
+	UserID     uint   `json:"user_id" form:"user_id" `
 	Token      string `json:"token" form:"token"`
-	ToUserId   uint   `json:"to_user_id" form:"to_user_id"`
+	ToUserID   uint   `json:"to_user_id" form:"to_user_id"`
 	ActionType uint   `json:"action_type" form:"action_type"`
 }
+
+type FollowActionResponse struct {
+	Response
+}
+
 type UserFollowListRequest struct {
-	UserId uint   `json:"user_id" form:"user_id" `
+	UserID uint   `json:"user_id" form:"user_id" `
 	Token  string `json:"token" form:"token"`
 }
+
 type UserFollowListResponse struct {
 	Response
-	UserList *[]repository.User `json:"user_list"`
+	UserList *[]entity.User `json:"user_list"`
 }
 
 type UserFollowerListRequest struct {
-	UserId uint   `json:"user_id" form:"user_id" `
+	UserID uint   `json:"user_id" form:"user_id" `
 	Token  string `json:"token" form:"token"`
 }
 
 type UserFollowerListResponse struct {
 	Response
-	UserList *[]repository.User `json:"user_list"`
+	UserList *[]entity.User `json:"user_list"`
 }
 
 type UserFavoriteRequest struct {
@@ -161,5 +172,5 @@ type UserFavoriteListRequest struct {
 
 type UserFavoriteListResponse struct {
 	Response
-	VideoList []repository.Video `json:"video_list"`
+	VideoList *[]entity.Video `json:"video_list"`
 }

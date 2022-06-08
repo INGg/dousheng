@@ -3,6 +3,7 @@ package service
 import (
 	"demo1/middleware"
 	"demo1/model"
+	"demo1/model/entity"
 	"demo1/repository"
 	"errors"
 	"fmt"
@@ -12,7 +13,7 @@ func Register(req *model.UserRegisterRequest) (*model.UserResisterResponse, erro
 	// 判断这个用户名的是否存在
 
 	// 2.向gorm发起请求判断用户是否存在
-	var user repository.User
+	var user entity.User
 
 	// 创建单例
 	userDAO := repository.NewUserDAO()
@@ -26,7 +27,7 @@ func Register(req *model.UserRegisterRequest) (*model.UserResisterResponse, erro
 					StatusCode: 1,
 					StatusMsg:  "create user error",
 				},
-				UserId: 0,
+				UserID: 0,
 				Token:  "",
 			}, err
 		}
@@ -37,7 +38,7 @@ func Register(req *model.UserRegisterRequest) (*model.UserResisterResponse, erro
 				StatusCode: 0,
 				StatusMsg:  "register user successful",
 			},
-			UserId: uid,
+			UserID: uid,
 			Token:  token,
 		}, nil
 	} else {
@@ -46,7 +47,7 @@ func Register(req *model.UserRegisterRequest) (*model.UserResisterResponse, erro
 				StatusCode: 1,
 				StatusMsg:  "user exited",
 			},
-			UserId: user.ID,
+			UserID: user.ID,
 			Token:  "",
 		}, nil
 	}
@@ -57,7 +58,7 @@ func Register(req *model.UserRegisterRequest) (*model.UserResisterResponse, erro
 func Login(req *model.UserLoginRequest) (*model.UserLoginResponse, error) {
 
 	// 2.向gorm发起请求判断用户是否存在
-	var user repository.User
+	var user entity.User
 	// 创建单例
 	userDAO := repository.NewUserDAO()
 
@@ -67,7 +68,7 @@ func Login(req *model.UserLoginRequest) (*model.UserLoginResponse, error) {
 				StatusCode: 1,
 				StatusMsg:  "user not existed",
 			},
-			UserId: 0,
+			UserID: 0,
 			Token:  "",
 		}, err
 	}
@@ -80,7 +81,7 @@ func Login(req *model.UserLoginRequest) (*model.UserLoginResponse, error) {
 				StatusCode: 1,
 				StatusMsg:  fmt.Sprintf("%v pwd error\n", req.UserName),
 			},
-			UserId: 0,
+			UserID: 0,
 			Token:  "",
 		}, errors.New("pwd error")
 	}
@@ -92,7 +93,7 @@ func Login(req *model.UserLoginRequest) (*model.UserLoginResponse, error) {
 				StatusCode: 1,
 				StatusMsg:  "%v gen token error",
 			},
-			UserId: 0,
+			UserID: 0,
 			Token:  "",
 		}, err
 	}
@@ -102,7 +103,7 @@ func Login(req *model.UserLoginRequest) (*model.UserLoginResponse, error) {
 			StatusCode: 0,
 			StatusMsg:  fmt.Sprintf("%v login succussfully\n", req.UserName),
 		},
-		UserId: uid,
+		UserID: uid,
 		Token:  token,
 	}, nil
 }
@@ -112,23 +113,26 @@ func Login(req *model.UserLoginRequest) (*model.UserLoginResponse, error) {
 func UserInfo(req *model.UserInfoRequest) (*model.UserInfoResponse, error) {
 	// 创建单例
 	userDAO := repository.NewUserDAO()
+	relationDAO := repository.NewRelationDAO()
 
-	var user model.User
-	if err := userDAO.FindUserById(req.UserId, (*repository.User)(&user)); err == nil {
-		return &model.UserInfoResponse{
-			Response: model.Response{
-				StatusCode: 0,
-				StatusMsg:  "get user info successfully",
-			},
-			User: user,
-		}, nil
-	} else {
+	var user entity.User
+	if err := userDAO.FindUserById(req.UserID, (&user)); err != nil {
 		return &model.UserInfoResponse{
 			Response: model.Response{
 				StatusCode: 1,
 				StatusMsg:  "get user info error (user not exists)",
 			},
-			User: model.User{},
+			User: entity.User{},
 		}, err
 	}
+
+	user.IsFollow = relationDAO.QueryAFollowB(req.UserID, user.ID)
+
+	return &model.UserInfoResponse{
+		Response: model.Response{
+			StatusCode: 0,
+			StatusMsg:  "get user info successfully",
+		},
+		User: user,
+	}, nil
 }

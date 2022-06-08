@@ -2,6 +2,7 @@ package repository
 
 import (
 	"demo1/config"
+	"demo1/model/entity"
 	"fmt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -11,11 +12,11 @@ var db *gorm.DB
 
 func InitDb() *gorm.DB {
 	db = connectDB()
-	db.AutoMigrate(&User{})
-	db.AutoMigrate(&Video{})
-	db.AutoMigrate(&Favorite{})
-	db.AutoMigrate(&Comment{})
-	db.AutoMigrate(&Relation{})
+	db.AutoMigrate(&entity.User{})
+	db.AutoMigrate(&entity.Video{})
+	db.AutoMigrate(&entity.Favorite{})
+	db.AutoMigrate(&entity.Comment{})
+	db.AutoMigrate(&entity.Relation{})
 
 	// 初始化总的数量
 	//db.Model(&User{}).Count(&UserCount)

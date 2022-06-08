@@ -47,4 +47,14 @@ func FavoriteList(c *gin.Context) {
 		})
 	}
 
+	req.UserID = c.GetUint("user_id")
+
+	favoriteResponse, err := service.FavoriteList(&req)
+	if err != nil {
+		zap.L().Error(err.Error())
+	} else {
+		zap.L().Info("get favorite list ok")
+	}
+
+	c.JSON(http.StatusOK, favoriteResponse)
 }
