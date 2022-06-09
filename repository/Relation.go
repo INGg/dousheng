@@ -71,23 +71,40 @@ func (r *RelationDao) DeleteRelation(FollowerId uint, AuthorId uint) error {
 	return nil
 }
 
-/* 查询当前用户的关注列表(id)
+/* 查询当前用户的粉丝(id)
  */
-func (r *RelationDao) QueryFollowIdByAuthorId(AuthorId uint, RelationList *[]Relation) error {
-	res := db.Model(&Relation{}).Where("author_id = ?", AuthorId).Find(RelationList)
+func (r *RelationDao) QueryFollowIdByAuthorId(AuthorId uint, FollowerIdList *[]Relation) error {
+	res := db.Model(&Relation{}).Where("author_id = ?", AuthorId).Find(FollowerIdList)
 	if res.Error != nil {
 		return res.Error
 	}
 	return nil
 }
 
-/*查询当前用户的粉丝(id)
+/*查询当前用户的关注(id)
  */
-func (r *RelationDao) QueryAuthorIdByFollowId(FollowerId uint, relationList *[]Relation) error {
+func (r *RelationDao) QueryAuthorIdByFollowId(FollowerId uint, AuthorIdList *[]Relation) error {
 
-	res := db.Model(&Relation{}).Where("follower_id = ?", FollowerId).Find(relationList)
+	res := db.Model(&Relation{}).Where("follower_id = ?", FollowerId).Find(AuthorIdList)
 	if res.Error != nil {
 		return res.Error
 	}
 	return nil
+}
+
+/*
+判断relation库中是否已经存在数据
+*/
+func (r *RelationDao) IsFollow(UserA uint, UserB uint) (bool, error) {
+	var FollowList []Relation
+	res := db.Model(&Relation{}).Where("follower_id=", UserA).Where("author_id", UserB).Find(&FollowList)
+	if res.Error != nil {
+		return false, res.Error
+	}
+	if len(FollowList) == 0 {
+		return false, nil
+	} else {
+		return true, nil
+	}
+
 }

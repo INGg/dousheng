@@ -65,7 +65,7 @@ func (v *VideoDAO) InsertVideo(uid uint, filepath string, title string) error {
 	// 生成url
 	// 视频url
 	VideoCount++
-	playUrl := "http://" + "120.76.119.43" + ":9090" + filepath
+	playUrl := "http://" + "192.168.43.26" + ":9090" + filepath
 	// 封面ur
 	coverUrl := "https://cdn.pixabay.com/photo/2016/03/27/18/10/bear-1283347_1280.jpg"
 	// 构造video

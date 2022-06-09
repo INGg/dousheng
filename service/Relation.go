@@ -9,6 +9,7 @@ import (
 //单例模式
 var relationDao = repository.NewRelationDAO()
 var userDao = repository.NewUserDAO()
+var isSFollow bool
 
 // RelationAction 关注操作
 func RelationAction(c *gin.Context) {
@@ -20,10 +21,27 @@ func RelationAction(c *gin.Context) {
 		})
 		// 成功获取参数
 	} else {
+		// 判断是否已经关注`
+		if isFollow, err := relationDao.IsFollow(req.UserId, req.ToUserId); err != nil {
+			c.JSON(200, Response{
+				StatusCode: 1,
+				StatusMsg:  "查询数据失败",
+			})
+			isSFollow = isFollow
+			return
+		}
 		// 关注操作
 		req.UserId = c.GetUint("user_id")
 		// 判断 关注还是取消关注
 		if req.ActionType == 1 {
+			if isSFollow {
+
+				c.JSON(200, Response{
+					StatusCode: 1,
+					StatusMsg:  "你已经关注他了",
+				})
+				return
+			}
 			if err := relationDao.AddRelation(req.UserId, req.ToUserId); err != nil {
 				c.JSON(200, Response{
 					StatusCode: 1,
@@ -39,6 +57,13 @@ func RelationAction(c *gin.Context) {
 		} else if req.ActionType == 2 {
 			fmt.Println("UserId: ", req.UserId)
 			fmt.Println("ToUSerId: ", req.ToUserId)
+			if !isSFollow {
+				c.JSON(200, Response{
+					StatusCode: 1,
+					StatusMsg:  "你还没关注他呢",
+				})
+				return
+			}
 			if err := relationDao.DeleteRelation(req.UserId, req.ToUserId); err != nil {
 
 				c.JSON(200, Response{

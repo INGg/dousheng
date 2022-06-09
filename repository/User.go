@@ -77,6 +77,7 @@ func (u *UserDAO) FindMUserByIdList(idList []uint, userList *[]UserRes) error {
 		fmt.Println("find user error")
 		return res.Error
 	}
+
 	return nil
 }
 
