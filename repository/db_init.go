@@ -31,7 +31,7 @@ func connectDB() *gorm.DB {
 	var err error
 	dsn := config.DBConnectString()
 
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{PrepareStmt: true})
 
 	if err != nil {
 		panic(fmt.Sprintf("Error connecting to database : error=%v", err))
