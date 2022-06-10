@@ -59,6 +59,7 @@ func (u *UserDAO) FindUsersByIdList(idList []uint, userList *[]entity.User) erro
 		fmt.Println("find user error")
 		return res.Error
 	}
+
 	return nil
 }
 

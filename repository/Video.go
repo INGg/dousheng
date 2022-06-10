@@ -47,7 +47,6 @@ func (v *VideoDAO) FindVideoByPathAndUid(path string, uid int64, video *entity.V
 
 // InsertVideo 将视频信息写入数据库，返回错误信息和错误
 func (v *VideoDAO) InsertVideo(uid uint, playUrl string, coverUrl string, title string) error {
-
 	// 构造video
 	var author entity.User
 	if err := NewUserDAO().FindUserById(uid, &author); err != nil { // 找到作者
@@ -77,11 +76,17 @@ func (v *VideoDAO) InsertVideo(uid uint, playUrl string, coverUrl string, title 
 	return nil
 }
 
-func (v *VideoDAO) VideoCount() int64 {
-	var count int64
-	db.Model(&entity.Video{}).Count(&count)
-	return count
-}
+//func (v *VideoDAO) VideoCount() int64 {
+//	var count int64
+//	db.Model(&entity.Video{}).Count(&count)
+//	return count
+//}
+//
+//func (v *VideoDAO) VideoCount() int64 {
+//	var count int64
+//	db.Model(&entity.Video{}).Count(&count)
+//	return count
+//}
 
 // FindAllVideoByUid 通过uid找到这个人发布的所有视频
 func (v *VideoDAO) FindAllVideoByUid(uid uint, VideoList *[]entity.Video) error {

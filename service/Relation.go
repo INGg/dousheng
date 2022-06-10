@@ -7,6 +7,84 @@ import (
 	"errors"
 )
 
+//单例模式
+var relationDao = repository.NewRelationDAO()
+var userDao = repository.NewUserDAO()
+var isSFollow bool
+
+// RelationAction 关注操作
+//func RelationAction(c *gin.Context) {
+//	var req model.FollowActionRequest
+//	if err := c.ShouldBind(&req); err != nil {
+//		c.JSON(200, model.Response{
+//			StatusCode: 1,
+//			StatusMsg:  "参数解析失败",
+//		})
+//		// 成功获取参数
+//	} else {
+//		// 判断是否已经关注`
+//		if isFollow, err := relationDao.IsFollow(req.UserID, req.ToUserID); err != nil {
+//			c.JSON(200, model.Response{
+//				StatusCode: 1,
+//				StatusMsg:  "查询数据失败",
+//			})
+//			isSFollow = isFollow
+//			return
+//		}
+//		// 关注操作
+//		req.UserID = c.GetUint("user_id")
+//		// 判断 关注还是取消关注
+//		if req.ActionType == 1 {
+//			if isSFollow {
+//
+//				c.JSON(200, model.Response{
+//					StatusCode: 1,
+//					StatusMsg:  "你已经关注他了",
+//				})
+//				return
+//			}
+//			if err := relationDao.AddRelation(req.UserID, req.ToUserID); err != nil {
+//				c.JSON(200, model.Response{
+//					StatusCode: 1,
+//					StatusMsg:  "关注失败",
+//				})
+//				return
+//			}
+//			c.JSON(200, model.Response{
+//				StatusCode: 0,
+//				StatusMsg:  "关注成功",
+//			})
+//			//	取消关注操作
+//		} else if req.ActionType == 2 {
+//			fmt.Println("UserId: ", req.UserID)
+//			fmt.Println("ToUSerId: ", req.ToUserID)
+//			if !isSFollow {
+//				c.JSON(200, model.Response{
+//					StatusCode: 1,
+//					StatusMsg:  "你还没关注他呢",
+//				})
+//				return
+//			}
+//			if err := relationDao.DeleteRelation(req.UserID, req.ToUserID); err != nil {
+//
+//				c.JSON(200, model.Response{
+//					StatusCode: 1,
+//					StatusMsg:  "取消关注失败",
+//				})
+//				return
+//			}
+//			c.JSON(200, model.Response{
+//				StatusCode: 0,
+//				StatusMsg:  "取消关注成功",
+//			})
+//		} else {
+//			c.JSON(200, model.Response{
+//				StatusCode: 1,
+//				StatusMsg: "ActionType 解析失败",
+//			}
+//		}
+//	}
+//}
 func AddRelation(req *model.FollowActionRequest) (*model.FollowActionResponse, error) {
 	if req.UserID == req.ToUserID {
 		return &model.FollowActionResponse{
