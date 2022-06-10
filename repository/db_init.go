@@ -25,6 +25,8 @@ func InitDb() *gorm.DB {
 	return db
 }
 
+// 缓存预编译语句
+//
 func connectDB() *gorm.DB {
 	var err error
 	dsn := config.DBConnectString()
