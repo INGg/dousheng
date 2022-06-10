@@ -52,12 +52,7 @@ func (r *RelationDao) DeleteRelation(FollowerId uint, AuthorId uint) error {
 	return nil
 }
 
-/* 查询当前用户的粉丝(id)
- */
-//func (r *RelationDao) QueryFollowIdByAuthorId(AuthorId uint, FollowerIdList *[]Relation) error {
-//	res := db.Model(&Relation{}).Where("author_id = ?", AuthorId).Find(FollowerIdList)
-//	// QueryFollowIdByUserID 查询当前用户的关注列表(id)
-//}
+// QueryFollowIdByUserID 查询当前用户的粉丝(id)
 func (r *RelationDao) QueryFollowIdByUserID(uid uint, RelationList *[]entity.Relation) error {
 	res := db.Model(&entity.Relation{}).Where("user_id = ?", uid).Find(RelationList)
 	if res.Error != nil {
@@ -65,13 +60,6 @@ func (r *RelationDao) QueryFollowIdByUserID(uid uint, RelationList *[]entity.Rel
 	}
 	return nil
 }
-
-/*查询当前用户的关注(id)
- */
-//func (r *RelationDao) QueryAuthorIdByFollowId(FollowerId uint, AuthorIdList *[]Relation) error {
-//
-//	res := db.Model(&Relation{}).Where("follower_id = ?", FollowerId).Find(AuthorIdList)
-//}
 
 // QueryUsersIDByFollowId 查询当前用户的粉丝(id)
 func (r *RelationDao) QueryUsersIDByFollowId(FollowerId uint, relationList *[]entity.Relation) error {
@@ -82,21 +70,7 @@ func (r *RelationDao) QueryUsersIDByFollowId(FollowerId uint, relationList *[]en
 	return nil
 }
 
-/*
-判断relation库中是否已经存在数据
-*/
-//func (r *RelationDao) IsFollow(UserA uint, UserB uint) (bool, error) {
-//	var FollowList []Relation
-//	res := db.Model(&Relation{}).Where("follower_id=", UserA).Where("author_id", UserB).Find(&FollowList)
-//	if res.Error != nil {
-//		return false, res.Error
-//	}
-//	if len(FollowList) == 0 {
-//		return false, nil
-//	} else {
-//		return true, nil
-//	}
-//}
+// QueryAFollowB 判断relation库中是否已经存在数据
 func (r *RelationDao) QueryAFollowB(Auid uint, Buid uint) bool {
 	res := db.Model(&entity.Relation{}).Where("user_id = ?", Auid).Where("follow_id = ?", Buid)
 	if res.Error != nil {

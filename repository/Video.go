@@ -76,18 +76,6 @@ func (v *VideoDAO) InsertVideo(uid uint, playUrl string, coverUrl string, title 
 	return nil
 }
 
-//func (v *VideoDAO) VideoCount() int64 {
-//	var count int64
-//	db.Model(&entity.Video{}).Count(&count)
-//	return count
-//}
-//
-//func (v *VideoDAO) VideoCount() int64 {
-//	var count int64
-//	db.Model(&entity.Video{}).Count(&count)
-//	return count
-//}
-
 // FindAllVideoByUid 通过uid找到这个人发布的所有视频
 func (v *VideoDAO) FindAllVideoByUid(uid uint, VideoList *[]entity.Video) error {
 	res := db.Model(&entity.Video{}).Where("author_id = ?", uid).Find(VideoList)
