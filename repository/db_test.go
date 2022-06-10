@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"demo1/model/entity"
 	"fmt"
 	"testing"
 )
@@ -8,7 +9,6 @@ import (
 func TestDB(t *testing.T) {
 	InitDb()
 	//CreateUser("123", "345")
-	fmt.Println(UserCount)
 
 	//_, _ = CreateUser("lzd", "213344")
 	//_, _ = CreateUser("bob", "123444")
@@ -23,7 +23,7 @@ func TestDB(t *testing.T) {
 func TestFindAllVideoByUid(t *testing.T) {
 	InitDb()
 	id := 1
-	var video []Video
+	var video []entity.Video
 	videoDAO := NewVideoDAO()
 	err := videoDAO.FindAllVideoByUid(uint(id), &video)
 	if err != nil {
@@ -38,7 +38,7 @@ func TestFindAllVideoByUid(t *testing.T) {
 
 func TestGetList(t *testing.T) {
 	InitDb()
-	var res []Video
+	var res []entity.Video
 	db.Find(&res)
 	for _, re := range res {
 		fmt.Printf("%+v", re)
@@ -48,10 +48,15 @@ func TestGetList(t *testing.T) {
 func TestGetByList(t *testing.T) {
 	InitDb()
 	var idList = []uint{1, 2, 3}
-	var res []Video
-	db.Model(&Video{}).Where("id = ?", idList).First(&res)
+	var res []entity.Video
+	db.Model(&entity.Video{}).Where("id = ?", idList).First(&res)
 	for _, re := range res {
 		fmt.Printf("%+v", re)
 	}
 
+}
+
+func TestRelationDao_QueryAFollowB(t *testing.T) {
+	InitDb()
+	fmt.Println(NewRelationDAO().QueryAFollowB(1, 2))
 }

@@ -7,3 +7,5 @@
 /static/
 /demo1.exe
 /repository/conf.go
+/log/info.log
+/log/error.log

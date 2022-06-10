@@ -2,32 +2,14 @@ package repository
 
 import (
 	"demo1/middleware"
-	"encoding/base64"
+	"demo1/model/entity"
+	"demo1/util"
 	"errors"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"log"
 	"sync"
 )
-
-var UserCount int64
-
-type User struct {
-	ID            uint   `gorm:"primaryKey; not null" json:"id"`
-	Name          string `gorm:"type:varchar(64); not null;" json:"name"`
-	Token         string `gorm:"-" json:"token"`
-	Password      string `gorm:"char(24) ; not null;"`
-	FollowCount   int64  `gorm:"not null; default:0" json:"follow_count"`   // 关注的人的数量
-	FollowerCount int64  `gorm:"not null; default:0" json:"follower_count"` // 粉丝总数
-	IsFollow      bool   `gorm:"-" json:"is_follow"`
-}
-type UserRes struct {
-	ID            uint   `json:"id"`
-	Name          string `json:"name"`
-	FollowCount   int64  `json:"follow_count"`
-	FollowerCount int64  `json:"follower_count"`
-	IsFollow      bool   `gorm:"-" json:"is_follow"`
-}
 
 func TableName() string {
 	return "users"
@@ -54,8 +36,8 @@ func MakeToken(username string, uid uint) (string, error) {
 }
 
 // FindUserIDByName 通过名字判断用户是否存在
-func (u *UserDAO) FindUserIDByName(username string, user *User) error {
-	if res := db.Model(User{}).Where("name = ?", username).First(user); errors.Is(res.Error, gorm.ErrRecordNotFound) {
+func (u *UserDAO) FindUserIDByName(username string, user *entity.User) error {
+	if res := db.Model(entity.User{}).Where("name = ?", username).First(user); errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return res.Error
 	} else {
 		return nil
@@ -63,17 +45,17 @@ func (u *UserDAO) FindUserIDByName(username string, user *User) error {
 }
 
 // FindUserById 通过id找到user
-func (u *UserDAO) FindUserById(id uint, user *User) error {
-	if res := db.Model(User{}).Where("id = ?", id).First(user); errors.Is(res.Error, gorm.ErrRecordNotFound) {
+func (u *UserDAO) FindUserById(id uint, user *entity.User) error {
+	if res := db.Model(entity.User{}).Select("name", "id", "follow_count", "follower_count").Where("id = ?", id).First(user); errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		fmt.Println("find user error")
 		return res.Error
 	}
 	return nil
 }
 
-// FindMUserByIdList 通过id数组找到user数组
-func (u *UserDAO) FindMUserByIdList(idList []uint, userList *[]UserRes) error {
-	if res := db.Model(User{}).Where("id IN ?", idList).Find(userList); errors.Is(res.Error, gorm.ErrRecordNotFound) {
+// FindUsersByIdList 通过id数组找到user数组
+func (u *UserDAO) FindUsersByIdList(idList []uint, userList *[]entity.User) error {
+	if res := db.Model(entity.User{}).Select("name", "id", "follow_count", "follower_count").Where("id IN ?", idList).Find(userList); errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		fmt.Println("find user error")
 		return res.Error
 	}
@@ -83,16 +65,14 @@ func (u *UserDAO) FindMUserByIdList(idList []uint, userList *[]UserRes) error {
 
 // CreateUser 向数据库写入User
 func (u *UserDAO) CreateUser(username string, pwd string) (uid uint, token string, err error) {
-	user := User{
+	user := entity.User{
 		Name:          username,
-		Password:      base64.StdEncoding.EncodeToString([]byte(pwd)),
+		Password:      util.MakeMD5(pwd),
 		FollowCount:   0,
 		FollowerCount: 0,
 	}
 
 	res := db.Create(&user)
-
-	//UserCount++
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return 0, "", res.Error
 	}
@@ -109,29 +89,53 @@ func (u *UserDAO) CreateUser(username string, pwd string) (uid uint, token strin
 // CheckUserPwd 登陆检查密码，即检查password是否一致，一致返回userid和ok，ok为true为密码正确
 func (u *UserDAO) CheckUserPwd(username string, pwd string) (uid uint, ok bool) {
 	// 根据名字获取token
-	var user User
+	var user entity.User
 	db.Where("name = ?", username).First(&user)
 	// 构造password进行比对
 
-	if user.Password != base64.StdEncoding.EncodeToString([]byte(pwd)) {
+	if user.Password != util.MakeMD5(pwd) {
 		return 0, false
 	} else {
 		return user.ID, true
 	}
 }
 
-// JudgeAFollowB 判断a是否关注了b
-func (u *UserDAO) JudgeAFollowB(uida int64, uidb int64) bool {
-	//res := db.Where()
-	return true
-}
-
-// AFollowB 让a关注/取关b，关注是1
-func (u *UserDAO) AFollowB(ctx *gin.Context, op int32) error {
+// UpdateUserFollowerCount 增加某人的粉丝数量
+func (u *UserDAO) UpdateUserFollowerCount(uid uint) error {
+	res := db.Model(&entity.User{ID: uid}).UpdateColumn("follower_count", gorm.Expr("follower_count+?", 1))
+	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		log.Print("Update FollowerCount error")
+		return res.Error
+	}
 	return nil
 }
 
-//func (u *UserDAO) GetUserList(uid *[]uint, resUser *[]User) error {
-//var res []User
-//db.Find(&User{})
-//}
+// ReduceFollowerCount 减少某人的粉丝数量
+func (u *UserDAO) ReduceFollowerCount(uid uint) error {
+	res := db.Model(&entity.User{ID: uid}).UpdateColumn("follower_count", gorm.Expr("follower_count-?", 1))
+	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		log.Print("Update FollowerCount error")
+		return res.Error
+	}
+	return nil
+}
+
+// UpdateUserFollowCount 增加某人的关注数量
+func (u *UserDAO) UpdateUserFollowCount(uid uint) error {
+	res := db.Model(&entity.User{ID: uid}).UpdateColumn("follow_count", gorm.Expr("follow_count+?", 1))
+	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		log.Print("Update FollowCount error")
+		return res.Error
+	}
+	return nil
+}
+
+// ReduceFollowCount 减少某人的关注数量
+func (u *UserDAO) ReduceFollowCount(uid uint) error {
+	res := db.Model(&entity.User{ID: uid}).UpdateColumn("follow_count", gorm.Expr("follow_count-?", 1))
+	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		log.Print("Update FollowerCount error")
+		return res.Error
+	}
+	return nil
+}
