@@ -64,7 +64,7 @@ func Feed(req *model.FeedRequest) (*model.FeedResponse, error) {
 		}
 
 		// 查询发起请求用户是否给这个视频点赞了
-		resList[i].IsFavorite = favoriteDAO.CheckIsFavorite(videoList[i].AuthorID, video.ID)
+		resList[i].IsFavorite = favoriteDAO.CheckIsFavorite(req.FromUserID, video.ID)
 
 		//fmt.Printf("%+v\n", resList[i])
 	}
