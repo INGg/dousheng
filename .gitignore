@@ -9,3 +9,4 @@
 /repository/conf.go
 /log/info.log
 /log/error.log
+/go-wrk/

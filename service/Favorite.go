@@ -56,6 +56,17 @@ func addFavorite(req *model.UserFavoriteRequest) (*model.UserFavoriteResponse, e
 	favoriteDAO := repository.NewFavoriteDAO()
 
 	//点赞操作
+
+	// 是否已点赞
+	if favoriteDAO.CheckIsFavorite(req.UserID, req.VideoID) == true {
+		return &model.UserFavoriteResponse{
+			Response: model.Response{
+				StatusCode: 1,
+				StatusMsg:  "has favorite this video",
+			},
+		}, nil
+	}
+
 	//将该视频加入用户的点赞列表
 	if err := favoriteDAO.Favorite(req.UserID, req.VideoID); err != nil {
 		return &model.UserFavoriteResponse{
@@ -88,6 +99,16 @@ func cancelFavorite(req *model.UserFavoriteRequest) (*model.UserFavoriteResponse
 	favoriteDAO := repository.NewFavoriteDAO()
 
 	//取消点赞
+	// 检查是否已点赞
+	if favoriteDAO.CheckIsFavorite(req.UserID, req.VideoID) == false {
+		return &model.UserFavoriteResponse{
+			Response: model.Response{
+				StatusCode: 1,
+				StatusMsg:  "has not favorite this video",
+			},
+		}, nil
+	}
+
 	//将该视频从用户的点赞列表移除
 	if err := favoriteDAO.UnFavorite(req.UserID, req.VideoID); err != nil {
 		return &model.UserFavoriteResponse{

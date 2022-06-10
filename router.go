@@ -3,11 +3,14 @@ package main
 import (
 	"demo1/controller"
 	"demo1/middleware"
+	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 )
 
 func initRouter(r *gin.Engine) {
 	//r.Static("/static", "./public")
+
+	pprof.Register(r)
 
 	apiRouter := r.Group("/douyin")
 
