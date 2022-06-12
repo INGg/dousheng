@@ -55,7 +55,7 @@ func (r *RelationDao) DeleteRelation(FollowerId uint, AuthorId uint) error {
 // QueryFollowIdByUserID 查询当前用户的粉丝(id)
 func (r *RelationDao) QueryFollowIdByUserID(uid uint, RelationList *[]entity.Relation) error {
 	res := db.Model(&entity.Relation{}).Where("user_id = ?", uid).Find(RelationList)
-	if res.Error != nil {
+	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return res.Error
 	}
 	return nil
@@ -64,7 +64,7 @@ func (r *RelationDao) QueryFollowIdByUserID(uid uint, RelationList *[]entity.Rel
 // QueryUsersIDByFollowId 查询当前用户的粉丝(id)
 func (r *RelationDao) QueryUsersIDByFollowId(FollowerId uint, relationList *[]entity.Relation) error {
 	res := db.Model(&entity.Relation{}).Where("follow_id = ?", FollowerId).Find(relationList)
-	if res.Error != nil {
+	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return res.Error
 	}
 	return nil
@@ -72,8 +72,8 @@ func (r *RelationDao) QueryUsersIDByFollowId(FollowerId uint, relationList *[]en
 
 // QueryAFollowB 判断relation库中是否已经存在数据
 func (r *RelationDao) QueryAFollowB(Auid uint, Buid uint) bool {
-	res := db.Model(&entity.Relation{}).Where("user_id = ?", Auid).Where("follow_id = ?", Buid)
-	if res.Error != nil {
+	res := db.Model(&entity.Relation{}).Where("user_id = ?", Auid).Where("follow_id = ?", Buid).First(&entity.Relation{})
+	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return false
 	}
 	return true
