@@ -99,8 +99,9 @@ func PublishList(req *model.PublishListRequest) (*model.PublishListResponse, err
 		}
 		if req.FromUserID != 0 {
 			resList[i].Video.Author.IsFollow = relationDAO.QueryAFollowB(req.FromUserID, resList[i].AuthorID)
+
+			resList[i].Video.IsFavorite = favoriteDAO.CheckIsFavorite(req.FromUserID, video.ID)
 		}
-		resList[i].IsFavorite = favoriteDAO.CheckIsFavorite(req.FromUserID, video.ID)
 	}
 
 	//for i, video := range resList {

@@ -4,6 +4,7 @@ import (
 	"demo1/model"
 	"demo1/model/entity"
 	"demo1/repository"
+	"fmt"
 	"go.uber.org/zap"
 )
 
@@ -58,15 +59,16 @@ func Feed(req *model.FeedRequest) (*model.FeedResponse, error) {
 		resList[i].Video = video
 		resList[i].Author = videoList[i].Author
 
-		// 查询发起请求用户是否关注了这个人
+		// 查询是否已经登陆
 		if req.FromUserID != 0 {
+			// 查询发起请求用户是否关注了这个人
 			resList[i].Author.IsFollow = relationDAO.QueryAFollowB(req.FromUserID, resList[i].AuthorID)
+
+			// 查询发起请求用户是否给这个视频点赞了
+			resList[i].Video.IsFavorite = favoriteDAO.CheckIsFavorite(req.FromUserID, video.ID)
 		}
 
-		// 查询发起请求用户是否给这个视频点赞了
-		resList[i].IsFavorite = favoriteDAO.CheckIsFavorite(req.FromUserID, video.ID)
-
-		//fmt.Printf("%+v\n", resList[i])
+		fmt.Printf("%+v\n", resList[i])
 	}
 
 	if err != nil {

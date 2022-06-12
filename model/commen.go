@@ -12,7 +12,6 @@ type Response struct {
 
 type Video struct {
 	entity.Video
-	IsFavorite bool
 }
 
 // -- feed --

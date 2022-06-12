@@ -184,10 +184,10 @@ func FavoriteList(req *model.UserFavoriteListRequest) (*model.UserFavoriteListRe
 		// 请求的人是否关注了作者
 		if req.FromUserID != 0 {
 			videoList[i].Author.IsFollow = relationDAO.QueryAFollowB(req.FromUserID, videoList[i].AuthorID)
-		}
 
-		// 请求的人有没有给视频点赞
-		videoList[i].IsFavorite = favoriteDAO.CheckIsFavorite(req.FromUserID, videoList[i].ID)
+			// 请求的人有没有给视频点赞
+			videoList[i].IsFavorite = favoriteDAO.CheckIsFavorite(req.FromUserID, videoList[i].ID)
+		}
 	}
 
 	return &model.UserFavoriteListResponse{

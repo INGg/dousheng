@@ -78,7 +78,7 @@ func (f *FavoriteDAO) ReduceFavoriteCount(vid uint) error {
 }
 
 func (f *FavoriteDAO) CheckIsFavorite(uid uint, vid uint) bool {
-	res := db.Where(&entity.Favorite{UserID: uid, VideoID: vid}).First(&uid)
+	res := db.Model(&entity.Favorite{}).Where("user_id = ?", uid).Where("video_id = ?", vid).First(&entity.Favorite{})
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return false
 	}
